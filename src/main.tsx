@@ -1,16 +1,23 @@
-
-import { createRoot } from 'react-dom/client'
-import "./style/index.css"
-import './mocks/server.ts'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './shared/context/AuthContext'
-import { Router } from './Routes.tsx'
+import { Router } from './Router'
+import { makeServer } from './mocks/server'
+ import './style/Dashboard.css'
 
-
-createRoot(document.getElementById('root')!).render(
-  <BrowserRouter>
-    <AuthProvider>
-      <Router />
-    </AuthProvider>
-  </BrowserRouter>
+// Inicia o servidor Mirage apenas em desenvolvimento
+if (import.meta.env.DEV) {
+  makeServer()
+}
+ 
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <AuthProvider>
+        <Router />
+      </AuthProvider>
+    </BrowserRouter>
+  </React.StrictMode>
 )
+ 

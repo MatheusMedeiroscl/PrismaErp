@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import logo from '../assets/prisma_erp_logo.svg'
 import '../style/register.css'
+import '../style/index.css'
 import { useAuth } from '../shared/context/AuthContext'
 
 export function Register(){

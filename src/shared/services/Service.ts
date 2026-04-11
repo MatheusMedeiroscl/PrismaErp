@@ -1,43 +1,98 @@
+// src/shared/services/Service.ts
 
-import axios from 'axios';
-
-const axiosInstance = axios.create();
-interface IUser{
-    name: String ,
-    email: String,
-    password: String
-}
-
-interface SignInCredentials {
+interface LoginCredentials {
   email: string
   password: string
 }
 
-interface SignInResponse {
-  user: {
-    id: string
-    name: string
-    email: string
-  }
+interface User {
+  id: string
+  name: string
+  email: string
 }
 
-export const Service =  {
-   async Login({email, password}: SignInCredentials): Promise<SignInResponse>{
-        const response = await fetch('/api/users/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        })
+interface Sale {
+  id: string
+  status: string
+  client: string
+  total: number
+  payment: string
+  seller: string
+  date: string
+}
 
-        if (!response.ok) {
-            throw new Error('Email ou senha inválidos')
-        }
+interface Product {
+  name: string
+  stock: number
+  minStock: number
+  category: string
+  price: number
+  entries: number
+  exits: number
+}
 
-        return response.json()
-        },
+const BASE_URL = '/api'
 
-    async createUser(request: IUser){
-        const response = await axiosInstance.post('/api/users', request);
-        return response.data
-    }
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(`${BASE_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Erro na requisição')
+  }
+
+  return response.json()
+}
+
+export const Service = {
+  // Auth
+  Login: ({ email, password }: LoginCredentials) =>
+    request<{ user: User }>('/users/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    }),
+
+  // Dashboard
+  GetDashboard: () =>
+    request<{
+      totalRevenue: number
+      monthlySales: number
+      activeClients: number
+      totalStock: number
+      salesPerformance: { month: string; value: number }[]
+      stockVsDemand: { category: string; stock: number; demand: number }[]
+      recentSales: Sale[]
+      topProducts: Product[]
+    }>('/dashboard'),
+
+  // Sales
+  GetSales: () =>
+    request<{
+      sales: Sale[]
+      summary: { total: number; received: number; pending: number; cancelled: number }
+    }>('/sales'),
+
+  CreateSale: (sale: Omit<Sale, 'id'>) =>
+    request<Sale>('/sales', {
+      method: 'POST',
+      body: JSON.stringify(sale),
+    }),
+
+  // Products
+  GetProducts: () =>
+    request<{
+      products: Product[]
+      summary: { totalStock: number; totalValue: number; avgDays: number; lowStockCount: number; totalProducts: number }
+      lowStock: Product[]
+      monthlyMovement: { month: string; entries: number; exits: number }[]
+    }>('/products'),
+
+  CreateProduct: (product: Omit<Product, 'id'>) =>
+    request<Product>('/products', {
+      method: 'POST',
+      body: JSON.stringify(product),
+    }),
 }
