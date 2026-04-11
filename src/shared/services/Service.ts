@@ -19,16 +19,23 @@ interface Sale {
   payment: string
   seller: string
   date: string
+  product?: string
+  quantity?: number
 }
 
 interface Product {
+  id: string
   name: string
-  stock: number
-  minStock: number
   category: string
+  stock: number
   price: number
-  entries: number
-  exits: number
+  status: string
+}
+
+interface CatalogItem {
+  id: string
+  name: string
+  category: string
 }
 
 const BASE_URL = '/api'
@@ -81,11 +88,17 @@ export const Service = {
       body: JSON.stringify(sale),
     }),
 
-  // Products
+  UpdateSale: (id: string, data: Partial<Omit<Sale, 'id'>>) =>
+    request<Sale>(`/sales/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  // Products (Estoque)
   GetProducts: () =>
     request<{
       products: Product[]
-      summary: { totalStock: number; totalValue: number; avgDays: number; lowStockCount: number; totalProducts: number }
+      summary: { totalStock: number; totalValue: number; lowStockCount: number; totalProducts: number }
       lowStock: Product[]
       monthlyMovement: { month: string; entries: number; exits: number }[]
     }>('/products'),
@@ -95,4 +108,23 @@ export const Service = {
       method: 'POST',
       body: JSON.stringify(product),
     }),
+
+  UpdateProduct: (id: string, data: Partial<Omit<Product, 'id'>>) =>
+    request<Product>(`/products/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  // Catalog
+  GetCatalog: () =>
+    request<{ catalogItems: CatalogItem[] }>('/catalog'),
+
+  CreateCatalogItem: (item: Omit<CatalogItem, 'id'>) =>
+    request<CatalogItem>('/catalog', {
+      method: 'POST',
+      body: JSON.stringify(item),
+    }),
+
+  DeleteCatalogItem: (id: string) =>
+    request<{}>(`/catalog/${id}`, { method: 'DELETE' }),
 }

@@ -5,6 +5,7 @@ import { Home } from './pages/Home'
 import { Estoque } from './pages/Estoque'
 import { Vendas } from './pages/Vendas'
 import { PrivateRoute } from './components/PrivateRoute'
+import { Catalogo } from './pages/Catalogo'
 
 export function Router() {
   return (
@@ -21,6 +22,10 @@ export function Router() {
 
       <Route path="/vendas" element={
         <PrivateRoute><Vendas /></PrivateRoute>
+      } />
+
+      <Route path="/catalogo" element={
+        <PrivateRoute><Catalogo /></PrivateRoute>
       } />
 
       <Route path="/" element={<Navigate to="/login" replace />} />

@@ -16,6 +16,7 @@ export function makeServer() {
       user: Model,
       sale: Model,
       product: Model,
+      catalogItem: Model,
     },
 
     factories: {
@@ -32,52 +33,31 @@ export function makeServer() {
         payment: String,
         seller: String,
         date: String,
+        product: String,
+        quantity: Number,
       }),
       product: Factory.extend({
         name: String,
-        stock: Number,
-        minStock: Number,
         category: String,
+        stock: Number,
         price: Number,
-        entries: Number,
-        exits: Number,
+        status: String,
+      }),
+      catalogItem: Factory.extend({
+        name: String,
+        category: String,
       }),
     },
 
     seeds(server) {
-      // Users
       load('mirage-users').forEach((u: any) => server.create('user', u))
-      if (server.schema.all('user').length === 0) {
-        server.create('user', { name: 'Raquel', email: 'raquel@prisma.com', password: '123456' } as any)
-      }
-
-      // Sales
       load('mirage-sales').forEach((s: any) => server.create('sale', s))
-      if (server.schema.all('sale').length === 0) {
-        const sales = [
-          { id: '#32', status: 'A Receber', client: 'Mercado Dela limão', total: 245.92, payment: 'Boleto', seller: 'Renato Luis', date: '2024-01-10' },
-          { id: '#33', status: 'A Receber', client: 'Bachareira Rogério', total: 245.92, payment: 'Boleto', seller: 'Renato Luis', date: '2024-01-11' },
-          { id: '#01', status: 'Pendente', client: 'Irmão Neto pro Deus', total: 245.92, payment: 'Boleto', seller: 'Renata Luis', date: '2024-01-12' },
-          { id: '#32', status: 'Recebido', client: 'Quema Final', total: 13.90, payment: 'Pix', seller: 'Renata Luis', date: '2024-01-13' },
-          { id: '#12', status: 'Cancelado', client: 'Mercado Dela', total: 89.00, payment: 'Dinheiro', seller: 'Renato Luis', date: '2024-01-14' },
-        ]
-        sales.forEach(s => server.create('sale', s as any))
-      }
-
-      // Products
       load('mirage-products').forEach((p: any) => server.create('product', p))
-      if (server.schema.all('product').length === 0) {
-        const products = [
-          { name: 'Fruta Nutridelta', stock: 5, minStock: 10, category: 'Frutas', price: 1305.45, entries: 40, exits: 35 },
-          { name: 'Rastos de Viteiro', stock: 30, minStock: 20, category: 'Verduras', price: 760.85, entries: 50, exits: 20 },
-          { name: 'Mercado Kairo', stock: 25, minStock: 15, category: 'Cereais', price: 760.85, entries: 45, exits: 20 },
-          { name: '#totalRoc', stock: 18, minStock: 10, category: 'Geral', price: 929.08, entries: 30, exits: 12 },
-          { name: 'Allister Dem', stock: 2, minStock: 8, category: 'Frutas', price: 540.53, entries: 20, exits: 18 },
-          { name: 'Coco Negresco', stock: 3, minStock: 10, category: 'Doces', price: 450.00, entries: 15, exits: 12 },
-          { name: 'Fruta de Ouro', stock: 4, minStock: 12, category: 'Frutas', price: 380.00, entries: 25, exits: 21 },
-          { name: 'Palmito Tradicional', stock: 60, minStock: 20, category: 'Conservas', price: 825.60, entries: 80, exits: 20 },
-        ]
-        products.forEach(p => server.create('product', p as any))
+      load('mirage-catalog').forEach((c: any) => server.create('catalogItem', c))
+
+      // Garante ao menos um usuário padrão se o localStorage estiver vazio
+      if (server.schema.all('user').length === 0) {
+        server.create('user', { name: 'Admin', email: 'admin@prisma.com', password: '123456' } as any)
       }
     },
 
@@ -122,24 +102,43 @@ export function makeServer() {
         return sale
       })
 
+      this.patch('/sales/:id', (schema, request) => {
+        const sale = schema.find('sale', request.params.id)
+        if (!sale) return new Response(404, {}, { error: 'Venda não encontrada' })
+        sale.update(JSON.parse(request.requestBody))
+        save('mirage-sales', schema, 'sale')
+        return sale
+      })
+
       // Products / Estoque
       this.get('/products', (schema) => {
         const products = schema.all('product').models.map((p: any) => p.attrs)
         const totalStock = products.reduce((acc: number, p: any) => acc + p.stock, 0)
-        const totalValue = products.reduce((acc: number, p: any) => acc + p.price, 0)
-        const avgDays = 65
-        const lowStock = products.filter((p: any) => p.stock < p.minStock)
+        const totalValue = products.reduce((acc: number, p: any) => acc + (p.stock * p.price), 0)
+        const lowStock = products.filter((p: any) => p.status === 'Em Pedido')
+
+        const sales = schema.all('sale').models.map((s: any) => s.attrs)
+        const movByWeek: Record<string, { entries: number; exits: number }> = {}
+        sales.forEach((s: any) => {
+          if (!s.date) return
+          const d = new Date(s.date)
+          const week = `S${Math.ceil(d.getDate() / 7)}`
+          if (!movByWeek[week]) movByWeek[week] = { entries: 0, exits: 0 }
+          if (s.status === 'Recebido') movByWeek[week].entries += s.total
+          else movByWeek[week].exits += s.total
+        })
+        const monthlyMovement = Object.entries(movByWeek).map(([month, v]) => ({ month, ...v }))
 
         return {
           products,
-          summary: { totalStock, totalValue, avgDays, lowStockCount: lowStock.length, totalProducts: products.length },
+          summary: { totalStock, totalValue, lowStockCount: lowStock.length, totalProducts: products.length },
           lowStock,
-          monthlyMovement: [
-            { month: 'S1', entries: 120, exits: 80 },
-            { month: 'S2', entries: 90, exits: 110 },
-            { month: 'S3', entries: 150, exits: 95 },
-            { month: 'S4', entries: 80, exits: 130 },
-          ]
+          monthlyMovement: monthlyMovement.length > 0 ? monthlyMovement : [
+            { month: 'S1', entries: 0, exits: 0 },
+            { month: 'S2', entries: 0, exits: 0 },
+            { month: 'S3', entries: 0, exits: 0 },
+            { month: 'S4', entries: 0, exits: 0 },
+          ],
         }
       })
 
@@ -149,33 +148,77 @@ export function makeServer() {
         return product
       })
 
+      this.patch('/products/:id', (schema, request) => {
+        const product = schema.find('product', request.params.id)
+        if (!product) return new Response(404, {}, { error: 'Produto não encontrado' })
+        product.update(JSON.parse(request.requestBody))
+        save('mirage-products', schema, 'product')
+        return product
+      })
+
       // Dashboard
       this.get('/dashboard', (schema) => {
         const sales = schema.all('sale').models.map((s: any) => s.attrs)
         const products = schema.all('product').models.map((p: any) => p.attrs)
 
+        const totalRevenue = sales
+          .filter((s: any) => s.status === 'Recebido')
+          .reduce((acc: number, s: any) => acc + s.total, 0)
+
+        const monthlySales = sales.reduce((acc: number, s: any) => acc + s.total, 0)
+
+        const activeClients = new Set(sales.map((s: any) => s.client)).size
+
+        const totalStock = products.reduce((acc: number, p: any) => acc + p.stock, 0)
+
+        const salesByMonth = sales.reduce((acc: Record<string, number>, s: any) => {
+          if (!s.date) return acc
+          const month = new Date(s.date).toLocaleString('pt-BR', { month: 'short' })
+          acc[month] = (acc[month] || 0) + s.total
+          return acc
+        }, {})
+
+        const salesPerformance = Object.entries(salesByMonth).map(([month, value]) => ({ month, value }))
+
+        const stockByCategory = products.reduce((acc: Record<string, { stock: number; demand: number }>, p: any) => {
+          if (!acc[p.category]) acc[p.category] = { stock: 0, demand: 0 }
+          acc[p.category].stock += p.stock
+          acc[p.category].demand += p.exits
+          return acc
+        }, {})
+
+        const stockVsDemand = Object.entries(stockByCategory).map(([category, v]) => ({ category, ...v }))
+
         return {
-          totalRevenue: 50024,
-          monthlySales: 7450,
-          activeClients: 25,
-          totalStock: 75,
-          salesPerformance: [
-            { month: 'Jan', value: 4200 },
-            { month: 'Fev', value: 5800 },
-            { month: 'Mar', value: 3900 },
-            { month: 'Abr', value: 7200 },
-            { month: 'Mai', value: 6100 },
-            { month: 'Jun', value: 8900 },
-          ],
-          stockVsDemand: [
-            { category: 'Frutas', stock: 45, demand: 60 },
-            { category: 'Verduras', stock: 70, demand: 55 },
-            { category: 'Cereais', stock: 30, demand: 40 },
-            { category: 'Doces', stock: 20, demand: 35 },
-          ],
-          recentSales: sales.slice(0, 4),
+          totalRevenue,
+          monthlySales,
+          activeClients,
+          totalStock,
+          salesPerformance,
+          stockVsDemand,
+          recentSales: sales.slice(-4).reverse(),
           topProducts: products.sort((a: any, b: any) => b.exits - a.exits).slice(0, 4),
         }
+      })
+
+      // Catalog
+      this.get('/catalog', (schema) => {
+        const catalogItems = schema.all('catalogItem').models.map((c: any) => c.attrs)
+        return { catalogItems }
+      })
+
+      this.post('/catalog', (schema, request) => {
+        const item = schema.create('catalogItem', JSON.parse(request.requestBody))
+        save('mirage-catalog', schema, 'catalogItem')
+        return item
+      })
+
+      this.del('/catalog/:id', (schema, request) => {
+        const item = schema.find('catalogItem', request.params.id)
+        if (!item) return new Response(404, {}, { error: 'Produto não encontrado' })
+        item.destroy()
+        save('mirage-catalog', schema, 'catalogItem')
+        return new Response(200, {}, {})
       })
     },
   })
