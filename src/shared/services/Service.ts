@@ -11,6 +11,12 @@ interface User {
   email: string
 }
 
+interface SaleItem {
+  product: string
+  quantity: number
+  unitPrice: number
+}
+
 interface Sale {
   id: string
   status: string
@@ -19,8 +25,7 @@ interface Sale {
   payment: string
   seller: string
   date: string
-  product?: string
-  quantity?: number
+  items?: SaleItem[]
 }
 
 interface Product {
@@ -36,6 +41,12 @@ interface CatalogItem {
   id: string
   name: string
   category: string
+}
+
+interface Client {
+  id: string
+  establishment: string
+  responsible?: string
 }
 
 const BASE_URL = '/api'
@@ -127,4 +138,23 @@ export const Service = {
 
   DeleteCatalogItem: (id: string) =>
     request<{}>(`/catalog/${id}`, { method: 'DELETE' }),
+
+  // Clients
+  GetClients: () =>
+    request<{ clients: Client[] }>('/clients'),
+
+  CreateClient: (client: Omit<Client, 'id'>) =>
+    request<Client>('/clients', {
+      method: 'POST',
+      body: JSON.stringify(client),
+    }),
+
+  UpdateClient: (id: string, data: Partial<Omit<Client, 'id'>>) =>
+    request<Client>(`/clients/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  DeleteClient: (id: string) =>
+    request<{}>(`/clients/${id}`, { method: 'DELETE' }),
 }

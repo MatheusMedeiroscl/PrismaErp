@@ -2,7 +2,7 @@
 .sidebar {
   width: 180px;
   min-height: 100vh;
-  background: #1a1a2e;
+  background: #7f7fa6;
   display: flex;
   flex-direction: column;
   padding: 16px 0;
@@ -11,7 +11,7 @@
 
 .sidebar-logo {
   padding: 0 16px 24px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sidebar-logo img {
