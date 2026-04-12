@@ -8,7 +8,7 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
 } from 'recharts'
 import '../style/Dashboard.css'
-import '../style/Modal.css'
+import '../style/modal.css'
 
 interface DashboardData {
   totalRevenue: number

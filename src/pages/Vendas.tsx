@@ -4,7 +4,7 @@ import { Sidebar } from '../components/SideBar'
 import { Service } from '../shared/services/Service'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import '../style/Dashboard.css'
-import '../style/Modal.css'
+import '../style/modal.css'
 
 interface VendasData {
   sales: any[]
