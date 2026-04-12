@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Sidebar } from '../components/SideBar'
 import { Service } from '../shared/services/Service'
-import '../style/dashboard.css'
+import '../style/Dashboard.css'
 import '../style/modal.css'
 
 const INITIAL_PRODUCT_FORM = { name: '', category: '' }
