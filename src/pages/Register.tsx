@@ -33,7 +33,7 @@ export function Register(){
                 <input
                     type="text"
                     className='input'
-                    placeholder='Digite seu email...'
+                    placeholder='Digite seu email aa...'
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                 /> <br />
