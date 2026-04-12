@@ -120,6 +120,11 @@ export const Service = {
       body: JSON.stringify(product),
     }),
 
+  UpdateCatalogItem: (id: string, data: Partial<Omit<CatalogItem, 'id'>>) =>
+    request<CatalogItem>(`/catalog/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
   UpdateProduct: (id: string, data: Partial<Omit<Product, 'id'>>) =>
     request<Product>(`/products/${id}`, {
       method: 'PATCH',

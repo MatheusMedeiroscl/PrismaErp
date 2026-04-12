@@ -43,7 +43,6 @@ app.post('/api/users', async (req, res) => {
 app.get('/api/sales', async (_req, res) => {
   const sales = await query('SELECT * FROM sales ORDER BY date DESC')
 
-  // Busca os itens de todas as vendas de uma vez
   const allItems = await query('SELECT * FROM sale_items')
   const itemsBySaleId: Record<string, any[]> = {}
   allItems.forEach(item => {
@@ -137,11 +136,11 @@ app.get('/api/products', async (_req, res) => {
 })
 
 app.post('/api/products', async (req, res) => {
-  const { name, category, stock, price, status } = req.body
+  const { name, category, stock, price, status, cost_price, avg_price } = req.body
   const rows = await query(
-    `INSERT INTO products (name, category, stock, price, status)
-     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-    [name, category ?? null, stock, price, status ?? 'Em Estoque']
+    `INSERT INTO products (name, category, stock, price, status, cost_price, avg_price)
+     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    [name, category ?? null, stock, price, status ?? 'Em Estoque', cost_price ?? 0, avg_price ?? 0]
   )
   res.json(rows[0])
 })
@@ -178,6 +177,21 @@ app.post('/api/catalog', async (req, res) => {
   res.json(rows[0])
 })
 
+app.patch('/api/catalog/:id', async (req, res) => {
+  const { id } = req.params
+  const fields = req.body
+  const keys = Object.keys(fields)
+  if (keys.length === 0) return res.status(400).json({ error: 'Nenhum campo para atualizar' })
+  const setClause = keys.map((k, i) => `${k} = $${i + 1}`).join(', ')
+  const values = keys.map(k => fields[k])
+  const rows = await query(
+    `UPDATE catalog_items SET ${setClause} WHERE id = $${keys.length + 1} RETURNING *`,
+    [...values, id]
+  )
+  if (rows.length === 0) return res.status(404).json({ error: 'Item não encontrado' })
+  res.json(rows[0])
+})
+
 app.delete('/api/catalog/:id', async (req, res) => {
   await query('DELETE FROM catalog_items WHERE id = $1', [req.params.id])
   res.json({})
@@ -191,10 +205,10 @@ app.get('/api/clients', async (_req, res) => {
 })
 
 app.post('/api/clients', async (req, res) => {
-  const { establishment, responsible } = req.body
+  const { establishment, responsible, cnpj } = req.body
   const rows = await query(
-    'INSERT INTO clients (establishment, responsible) VALUES ($1, $2) RETURNING *',
-    [establishment, responsible ?? null]
+    'INSERT INTO clients (establishment, responsible, cnpj) VALUES ($1, $2, $3) RETURNING *',
+    [establishment, responsible ?? null, cnpj ?? null]
   )
   res.json(rows[0])
 })
@@ -261,9 +275,8 @@ app.get('/api/dashboard', async (_req, res) => {
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 
-// Em produção, serve o build do React
 if (process.env.NODE_ENV === 'production') {
-    const distPath = path.join(__dirname, '../../dist')
+  const distPath = path.join(__dirname, '../../dist')
   app.use(express.static(distPath))
   app.get('*', (_req, res) => {
     res.sendFile(path.join(distPath, 'index.html'))
