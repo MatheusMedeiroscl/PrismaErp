@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Sidebar } from '../components/SideBar'
 import { Service } from '../shared/services/Service'
 import '../style/Dashboard.css'
-import '../style/modal.css'
+import '../style/Modal.css'
 
 const INITIAL_PRODUCT_FORM = { name: '', category: '' }
 const INITIAL_CLIENT_FORM = { establishment: '', responsible: '' }
