@@ -2,7 +2,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../shared/context/AuthContext'
 import logo from '../assets/prisma_erp_logo.svg'
-import '../style/sidebar.css'
+import '../style/sideBar.css'
 
 export function Sidebar() {
   const { signOut } = useAuth()
