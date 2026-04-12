@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { Sidebar } from '../components/SideBar'
 import { Service } from '../shared/services/Service'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import '../style/dashboard.css'
+import '../style/Dashboard.css'
 import '../style/modal.css'
 
 interface VendasData {

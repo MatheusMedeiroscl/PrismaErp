@@ -7,7 +7,7 @@ import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
 } from 'recharts'
-import '../style/dashboard.css'
+import '../style/Dashboard.css'
 import '../style/modal.css'
 
 interface DashboardData {
