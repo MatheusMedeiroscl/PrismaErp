@@ -263,7 +263,7 @@ app.get('/api/dashboard', async (_req, res) => {
 
 // Em produção, serve o build do React
 if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '../dist')
+    const distPath = path.join(__dirname, '../../dist')
   app.use(express.static(distPath))
   app.get('*', (_req, res) => {
     res.sendFile(path.join(distPath, 'index.html'))
