@@ -1,6 +1,5 @@
 // src/pages/Vendas.tsx
 import { useEffect, useState, useRef } from 'react'
-import { Sidebar } from '../components/SideBar'
 import { Service } from '../shared/services/Service'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import '../style/Dashboard.css'
@@ -262,15 +261,12 @@ export function Vendas() {
   const productNames = catalogItems.map(c => c.name)
 
   if (!data) return (
-    <div className="app-layout">
-      <Sidebar />
+    <>
       <main className="page-content"><p className="loading-text">Carregando...</p></main>
-    </div>
+    </>
   )
 
-  return (
-    <div className="app-layout">
-      <Sidebar />
+  return (<>
       <main className="page-content">
         <div className="page-header">
           <h1 className="page-title">Vendas</h1>
@@ -578,6 +574,6 @@ export function Vendas() {
           </div>
         </div>
       )}
-    </div>
-  )
+  
+  </>)
 }

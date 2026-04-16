@@ -1,6 +1,5 @@
 // src/pages/Catalogo.tsx
 import { useEffect, useState } from 'react'
-import { Sidebar } from '../components/SideBar'
 import { Service } from '../shared/services/Service'
 import '../style/Dashboard.css'
 import '../style/Modal.css'
@@ -137,9 +136,7 @@ export function Catalogo() {
   const selectedProductStats = selectedProduct ? getProductStats(selectedProduct.name) : null
   const selectedClientStats = selectedClient ? getClientStats(selectedClient.establishment) : null
 
-  return (
-    <div className="app-layout">
-      <Sidebar />
+  return (<>
       <main className="page-content">
         <div className="page-header">
           <h1 className="page-title">Catálogo</h1>
@@ -407,6 +404,5 @@ export function Catalogo() {
           </div>
         </div>
       )}
-    </div>
-  )
+  </>)
 }

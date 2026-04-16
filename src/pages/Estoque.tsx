@@ -1,6 +1,5 @@
 // src/pages/Estoque.tsx
 import { useEffect, useState, useRef } from 'react'
-import { Sidebar } from '../components/SideBar'
 import { Service } from '../shared/services/Service'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
 import '../style/Dashboard.css'
@@ -82,15 +81,13 @@ export function Estoque() {
   const hasFilter = !!(filter.produto || filter.categoria)
 
   if (!data) return (
-    <div className="app-layout">
-      <Sidebar />
+    <>
       <main className="page-content"><p className="loading-text">Carregando...</p></main>
-    </div>
+    </>
   )
 
   return (
     <div className="app-layout">
-      <Sidebar />
       <main className="page-content">
         <div className="page-header">
           <h1 className="page-title">Estoque</h1>

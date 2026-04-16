@@ -26,7 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signIn(email: string, password: string) {
     const data = await Service.Login({ email, password })
     setUser(data.user)
-    navigate('/home')  // redireciona após login
   }
 
   function signOut() {

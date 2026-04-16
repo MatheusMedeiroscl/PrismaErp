@@ -8,10 +8,6 @@ body {
   color: #1a1a2e;
 }
 
-.app-layout {
-  display: flex;
-  min-height: 100vh;
-}
 
 .page-content {
   flex: 1;
