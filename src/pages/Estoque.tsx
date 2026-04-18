@@ -4,6 +4,8 @@ import { Service } from '../shared/services/Service'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
 import '../style/Dashboard.css'
 import '../style/Modal.css'
+import { PageLayout } from '../shared/layout/PageLayout'
+import { KpiCard } from '../components/Kpi'
 
 interface EstoqueData {
   products: any[]
@@ -82,38 +84,26 @@ export function Estoque() {
 
   if (!data) return (
     <>
-      <main className="page-content"><p className="loading-text">Carregando...</p></main>
+      <PageLayout title=''><p className="loading-text">Carregando...</p></PageLayout>
     </>
   )
 
-  return (
-    <div className="app-layout">
-      <main className="page-content">
-        <div className="page-header">
-          <h1 className="page-title">Estoque</h1>
-          <div className="header-actions">
-            <button className="btn-primary" onClick={() => setShowModal(true)}>+ Novo Registro</button>
-          </div>
-        </div>
+  const kpis = [
+    { label: 'Total de Produtos', value: data.summary.totalProducts },
+    { label: 'Unidades em Estoque', value: data.summary.totalStock.toLocaleString('pt-BR') },
+    { label: 'Valor Total', value: formatCurrency(data.summary.totalValue) },
+    { label: 'Em Pedido', value: data.summary.lowStockCount},
+  ]
+  return (<>
+    <PageLayout title='Análise de Estoque'
+      actions = {<button className="btn-primary" onClick={() => setShowModal(true)}>+ Novo Registro</button>}>
 
         <div className="dashboard-inner">
           <div className="kpi-cards-row">
-            <div className="kpi-card">
-              <span className="kpi-card-label">Total de Produtos</span>
-              <span className="kpi-card-value">{data.summary.totalProducts}</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-card-label">Unidades em Estoque</span>
-              <span className="kpi-card-value">{data.summary.totalStock.toLocaleString('pt-BR')}</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-card-label">Valor Total</span>
-              <span className="kpi-card-value">{formatCurrency(data.summary.totalValue)}</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-card-label">Em Pedido</span>
-              <span className="kpi-card-value">{data.summary.lowStockCount}</span>
-            </div>
+              {kpis.map((kpi) => (
+                  <KpiCard  className="kpi-card" key={kpi.label} label={kpi.label} value={kpi.value}/>
+                )
+              )}
           </div>
 
           <div className="estoque-mid-row">
@@ -221,7 +211,7 @@ export function Estoque() {
             </table>
           </div>
         </div>
-      </main>
+      </PageLayout>
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
@@ -277,6 +267,6 @@ export function Estoque() {
           </div>
         </div>
       )}
-    </div>
-  )
+
+  </>)
 }

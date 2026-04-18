@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { Service } from '../shared/services/Service'
 import '../style/Dashboard.css'
 import '../style/Modal.css'
+import { PageLayout } from '../shared/layout/PageLayout'
+import { KpiCard } from '../components/Kpi'
 
 const INITIAL_PRODUCT_FORM = { name: '', category: '' }
 const INITIAL_CLIENT_FORM = { establishment: '', responsible: '', cnpj: '' }
@@ -136,42 +138,39 @@ export function Catalogo() {
   const selectedProductStats = selectedProduct ? getProductStats(selectedProduct.name) : null
   const selectedClientStats = selectedClient ? getClientStats(selectedClient.establishment) : null
 
+
+
+  const kpisProdutos = [
+    {label: 'Total de Produtos', value: formatCurrency(products.length)},
+    {label: 'Categorias', value: formatCurrency(categories)},
+  ]
+
+  const kpisClientes = [
+    {label: 'Total de Clientes', value: formatCurrency(clients.length)},
+    {label: 'Com Responsável', value: clients.filter(c => c.responsible).length},
+    {label: 'Com CNPJ', value: clients.filter(c => c.cnpj).length},
+  ]
   return (<>
-      <main className="page-content">
-        <div className="page-header">
-          <h1 className="page-title">Catálogo</h1>
-          <div className="header-actions">
+      <PageLayout title='Catálogo'
+        actions = {
             <button className="btn-primary" onClick={openNewModal}>
               + {activeTab === 'products' ? 'Novo Produto' : 'Novo Cliente'}
             </button>
-          </div>
-        </div>
+      }>
 
         <div className="dashboard-inner">
           {/* KPI Cards */}
           <div className="kpi-cards-row">
             {activeTab === 'products' ? <>
-              <div className="kpi-card">
-                <span className="kpi-card-label">Total de Produtos</span>
-                <span className="kpi-card-value">{products.length}</span>
-              </div>
-              <div className="kpi-card">
-                <span className="kpi-card-label">Categorias</span>
-                <span className="kpi-card-value">{categories}</span>
-              </div>
+              {kpisProdutos.map((kpi) =>(
+                <KpiCard  className='kpi-card' key={kpi.label}  label={kpi.label} value={kpi.value}/>
+                )
+              )}     
             </> : <>
-              <div className="kpi-card">
-                <span className="kpi-card-label">Total de Clientes</span>
-                <span className="kpi-card-value">{clients.length}</span>
-              </div>
-              <div className="kpi-card">
-                <span className="kpi-card-label">Com Responsável</span>
-                <span className="kpi-card-value">{clients.filter(c => c.responsible).length}</span>
-              </div>
-              <div className="kpi-card">
-                <span className="kpi-card-label">Com CNPJ</span>
-                <span className="kpi-card-value">{clients.filter(c => c.cnpj).length}</span>
-              </div>
+              {kpisClientes.map((kpi) =>(
+                <KpiCard  className='kpi-card' key={kpi.label}  label={kpi.label} value={kpi.value}/>
+                )
+              )}    
             </>}
           </div>
 
@@ -350,7 +349,7 @@ export function Catalogo() {
             )}
           </div>
         </div>
-      </main>
+      </PageLayout>
 
       {/* Modal */}
       {showModal && (

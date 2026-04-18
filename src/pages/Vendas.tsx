@@ -1,9 +1,11 @@
 // src/pages/Vendas.tsx
 import { useEffect, useState, useRef } from 'react'
 import { Service } from '../shared/services/Service'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Label } from 'recharts'
 import '../style/Dashboard.css'
 import '../style/Modal.css'
+import { PageLayout } from '../shared/layout/PageLayout'
+import { KpiCard } from '../components/Kpi'
 
 interface VendasData {
   sales: any[]
@@ -262,37 +264,29 @@ export function Vendas() {
 
   if (!data) return (
     <>
-      <main className="page-content"><p className="loading-text">Carregando...</p></main>
+      <PageLayout title=''><p className="loading-text">Carregando...</p></PageLayout>
     </>
   )
 
+  const kpis = [
+    {label: 'Total Vendido', value: formatCurrency(data.summary.total)},
+    {label: 'Total Recebido', value: formatCurrency(data.summary.received)},
+    {label: 'A Receber / Pendente', value: formatCurrency(data.summary.pending)},
+    {label: 'Cancelados', value: formatCurrency(data.summary.cancelled)},
+  ]
+
   return (<>
-      <main className="page-content">
-        <div className="page-header">
-          <h1 className="page-title">Vendas</h1>
-          <div className="header-actions">
-            <button className="btn-primary" onClick={() => setShowModal(true)}>+ Novo Registro</button>
-          </div>
-        </div>
+      <PageLayout title='Análise de Vendas'
+        actions= {
+              <button className="btn-primary" onClick={() => setShowModal(true)}>+ Novo Registro</button>
+      }>
 
         <div className="dashboard-inner">
           <div className="kpi-cards-row">
-            <div className="kpi-card">
-              <span className="kpi-card-label">Total Vendido</span>
-              <span className="kpi-card-value">{formatCurrency(data.summary.total)}</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-card-label">Total Recebido</span>
-              <span className="kpi-card-value">{formatCurrency(data.summary.received)}</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-card-label">A Receber / Pendente</span>
-              <span className="kpi-card-value">{data.summary.pending}</span>
-            </div>
-            <div className="kpi-card">
-              <span className="kpi-card-label">Cancelados</span>
-              <span className="kpi-card-value">{formatCurrency(data.summary.cancelled)}</span>
-            </div>
+              {kpis.map((kpi) =>(
+                <KpiCard  className='kpi-card' key={kpi.label}  label={kpi.label} value={kpi.value}/>
+                )
+              )}           
           </div>
 
           <div className="vendas-mid-row">
@@ -426,7 +420,7 @@ export function Vendas() {
             </table>
           </div>
         </div>
-      </main>
+      </PageLayout>
 
       {showModal && (
         <div className="modal-overlay" onClick={resetModal}>

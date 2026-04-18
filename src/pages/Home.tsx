@@ -8,6 +8,9 @@ import {
 } from 'recharts'
 import '../style/Dashboard.css'
 import '../style/Modal.css'
+import { PageLayout } from '../shared/layout/PageLayout'
+import { formatCurrency } from '../shared/utils/Format'
+import { KpiCard } from '../components/Kpi'
 
 interface DashboardData {
   totalRevenue: number
@@ -27,15 +30,12 @@ const STATUS_COLOR: Record<string, string> = {
   'Cancelado': '#ef4444',
 }
 
-const INITIAL_FORM = { client: '', seller: '', payment: 'Pix', total: '', status: 'A Receber', date: '' }
 const INITIAL_FILTER = { cliente: '', data: '' }
 
 export function Home() {
   const { user } = useAuth()
   const [data, setData] = useState<DashboardData | null>(null)
-  const [showModal, setShowModal] = useState(false)
   const [showFilter, setShowFilter] = useState(false)
-  const [form, setForm] = useState(INITIAL_FORM)
   const [filter, setFilter] = useState(INITIAL_FILTER)
   const filterRef = useRef<HTMLDivElement>(null)
 
@@ -53,22 +53,6 @@ export function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  function formatCurrency(v: number) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
-  }
-
-  async function handleSubmit() {
-    if (!form.client || !form.total) return
-    await Service.CreateSale({
-      ...form,
-      total: Number(form.total),
-      date: form.date || new Date().toISOString().split('T')[0],
-    })
-    setShowModal(false)
-    setForm(INITIAL_FORM)
-    Service.GetDashboard().then(setData)
-  }
-
   const filteredSales = (data?.recentSales ?? []).filter(s => {
     const matchCliente = !filter.cliente || s.client.toLowerCase().includes(filter.cliente.toLowerCase())
     const matchData = !filter.data || s.date?.startsWith(filter.data)
@@ -79,39 +63,29 @@ export function Home() {
 
   if (!data) return (
     <>
-      <main className="page-content"><p className="loading-text">Carregando...</p></main>
+      <PageLayout title=''><p className="loading-text">Carregando...</p></PageLayout>
     </>
   )
 
-  return (<>
-      <main className="page-content">
-        <div className="page-header">
-          <h1 className="page-title">Home</h1>
-        </div>
 
+  const kpis = [
+    { label: 'Estoque Atual', value: formatCurrency(data.totalRevenue) },
+    { label: 'Vendas Mês', value: formatCurrency(data.monthlySales) },
+    { label: 'Clientes Ativos', value: `${data.activeClients}/${data.totalStock}` },
+    { label: 'X.range', value: formatCurrency(13500) },
+  ]
+  return (<>
+      <PageLayout title='Dashboard'>
         <div className="dashboard-inner">
           <div className="welcome-card">
             <div className="welcome-header">
               <p className="welcome-greeting">Seja Bem vinda, {user?.name} 🔥</p>
-              <button className="btn-primary" onClick={() => setShowModal(true)}>+ Novo Registro</button>
             </div>
             <div className="kpi-row">
-              <div className="kpi-item">
-                <span className="kpi-label">Estoque Atual</span>
-                <span className="kpi-value">{formatCurrency(data.totalRevenue)}</span>
-              </div>
-              <div className="kpi-item">
-                <span className="kpi-label">Vendas Mês</span>
-                <span className="kpi-value">{formatCurrency(data.monthlySales)}</span>
-              </div>
-              <div className="kpi-item">
-                <span className="kpi-label">Clientes Ativos</span>
-                <span className="kpi-value">{data.activeClients}/{data.totalStock}</span>
-              </div>
-              <div className="kpi-item">
-                <span className="kpi-label">X.range</span>
-                <span className="kpi-value">{formatCurrency(13500)}</span>
-              </div>
+                  {kpis.map((kpi) =>(
+                    <KpiCard key={kpi.label}  label={kpi.label} value={kpi.value}/>
+                    )
+                  )}
             </div>
           </div>
 
@@ -190,63 +164,6 @@ export function Home() {
             </table>
           </div>
         </div>
-      </main>
-
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">Nova Venda</h2>
-              <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div>
-                <label className="modal-label">Cliente *</label>
-                <input className="modal-input" placeholder="Nome do cliente" value={form.client}
-                  onChange={e => setForm(f => ({ ...f, client: e.target.value }))} />
-              </div>
-              <div>
-                <label className="modal-label">Vendedor</label>
-                <input className="modal-input" placeholder="Nome do vendedor" value={form.seller}
-                  onChange={e => setForm(f => ({ ...f, seller: e.target.value }))} />
-              </div>
-              <div className="modal-row">
-                <div className="modal-field">
-                  <label className="modal-label">Total (R$) *</label>
-                  <input className="modal-input" type="number" placeholder="0,00" value={form.total}
-                    onChange={e => setForm(f => ({ ...f, total: e.target.value }))} />
-                </div>
-                <div className="modal-field">
-                  <label className="modal-label">Data</label>
-                  <input className="modal-input" type="date" value={form.date}
-                    onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
-                </div>
-              </div>
-              <div className="modal-row">
-                <div className="modal-field">
-                  <label className="modal-label">Pagamento</label>
-                  <select className="modal-input" value={form.payment}
-                    onChange={e => setForm(f => ({ ...f, payment: e.target.value }))}>
-                    <option>Pix</option><option>Boleto</option>
-                    <option>Dinheiro</option><option>Cartão</option>
-                  </select>
-                </div>
-                <div className="modal-field">
-                  <label className="modal-label">Status</label>
-                  <select className="modal-input" value={form.status}
-                    onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
-                    <option>A Receber</option><option>Recebido</option>
-                    <option>Pendente</option><option>Cancelado</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
-              <button className="btn-primary" onClick={handleSubmit}>Salvar</button>
-            </div>
-          </div>
-        </div>
-      )}
+      </PageLayout>
     </>)
 }
