@@ -2,9 +2,10 @@
 import { useEffect, useState } from 'react'
 import { Service } from '../shared/services/Service'
 import '../style/Dashboard.css'
-import '../style/Modal.css'
 import { PageLayout } from '../shared/layout/PageLayout'
 import { KpiCard } from '../components/Kpi'
+import { formatCurrency } from '../shared/utils/Format'
+import { Modal } from '../components/Modal'
 
 const INITIAL_PRODUCT_FORM = { name: '', category: '' }
 const INITIAL_CLIENT_FORM = { establishment: '', responsible: '', cnpj: '' }
@@ -95,10 +96,6 @@ export function Catalogo() {
     Service.GetClients().then(r => setClients(r.clients))
   }
 
-  function formatCurrency(v: number) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
-  }
-
   // Estatísticas por produto (baseado nas vendas)
   function getProductStats(productName: string) {
     let qtdVendas = 0
@@ -158,7 +155,7 @@ export function Catalogo() {
             </button>
       }>
 
-        <div className="dashboard-inner">
+        <div>
           {/* KPI Cards */}
           <div className="kpi-cards-row">
             {activeTab === 'products' ? <>
@@ -353,55 +350,51 @@ export function Catalogo() {
 
       {/* Modal */}
       {showModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">
-                {activeTab === 'products'
-                  ? editingProduct ? 'Editar Produto' : 'Novo Produto'
-                  : editingClient ? 'Editar Cliente' : 'Novo Cliente'}
-              </h2>
-              <button className="modal-close" onClick={closeModal}>✕</button>
-            </div>
-            <div className="modal-body">
-              {activeTab === 'products' ? <>
-                <div>
-                  <label className="modal-label">Nome *</label>
-                  <input className="modal-input" placeholder="Nome do produto" value={productForm.name}
-                    onChange={e => setProductForm(f => ({ ...f, name: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="modal-label">Categoria</label>
-                  <input className="modal-input" placeholder="Ex: Frutas, Verduras..." value={productForm.category}
-                    onChange={e => setProductForm(f => ({ ...f, category: e.target.value }))} />
-                </div>
-              </> : <>
-                <div>
-                  <label className="modal-label">Nome do Estabelecimento *</label>
-                  <input className="modal-input" placeholder="Ex: Mercado Central" value={clientForm.establishment}
-                    onChange={e => setClientForm(f => ({ ...f, establishment: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="modal-label">Responsável</label>
-                  <input className="modal-input" placeholder="Nome do responsável (opcional)" value={clientForm.responsible}
-                    onChange={e => setClientForm(f => ({ ...f, responsible: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="modal-label">CNPJ</label>
-                  <input className="modal-input" placeholder="00.000.000/0000-00 (opcional)" value={clientForm.cnpj}
-                    onChange={e => setClientForm(f => ({ ...f, cnpj: e.target.value }))} />
-                </div>
-              </>}
-            </div>
-            <div className="modal-footer">
+        <Modal
+          onClose={closeModal}
+          title={activeTab === 'products' ? editingProduct ? 'Editar Produto' : 'Novo Produto' : editingClient ? 'Editar Cliente' : 'Novo Cliente'}
+          footer={
+            <>
               <button className="btn-secondary" onClick={closeModal}>Cancelar</button>
-              <button className="btn-primary"
-                onClick={activeTab === 'products' ? handleSubmitProduct : handleSubmitClient}>
+              <button className="btn-primary" onClick={activeTab === 'products' ? handleSubmitProduct : handleSubmitClient}>
                 Salvar
               </button>
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        >
+          {activeTab === 'products' ? (
+            <>
+              <div>
+                <label className="modal-label">Nome *</label>
+                <input className="modal-input" placeholder="Nome do produto" value={productForm.name}
+                  onChange={e => setProductForm(f => ({ ...f, name: e.target.value }))} />
+              </div>
+              <div>
+                <label className="modal-label">Categoria</label>
+                <input className="modal-input" placeholder="Ex: Frutas, Verduras..." value={productForm.category}
+                  onChange={e => setProductForm(f => ({ ...f, category: e.target.value }))} />
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="modal-label">Nome do Estabelecimento *</label>
+                <input className="modal-input" placeholder="Ex: Mercado Central" value={clientForm.establishment}
+                  onChange={e => setClientForm(f => ({ ...f, establishment: e.target.value }))} />
+              </div>
+              <div>
+                <label className="modal-label">Responsável</label>
+                <input className="modal-input" placeholder="Nome do responsável (opcional)" value={clientForm.responsible}
+                  onChange={e => setClientForm(f => ({ ...f, responsible: e.target.value }))} />
+              </div>
+              <div>
+                <label className="modal-label">CNPJ</label>
+                <input className="modal-input" placeholder="00.000.000/0000-00 (opcional)" value={clientForm.cnpj}
+                  onChange={e => setClientForm(f => ({ ...f, cnpj: e.target.value }))} />
+              </div>
+            </>
+          )}
+        </Modal>
       )}
   </>)
 }

@@ -3,9 +3,10 @@ import { useEffect, useState, useRef } from 'react'
 import { Service } from '../shared/services/Service'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
 import '../style/Dashboard.css'
-import '../style/Modal.css'
 import { PageLayout } from '../shared/layout/PageLayout'
 import { KpiCard } from '../components/Kpi'
+import { STATUS_STORAGE_COLOR } from '../shared/utils/Colors'
+import { Modal } from '../components/Modal'
 
 interface EstoqueData {
   products: any[]
@@ -14,10 +15,7 @@ interface EstoqueData {
   monthlyMovement: { month: string; entries: number; exits: number }[]
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  'Em Estoque': '#22c55e',
-  'Em Pedido': '#f59e0b',
-}
+
 
 const INITIAL_FORM = { name: '', category: '', stock: '', price: '', status: 'Em Estoque' }
 const INITIAL_FILTER = { produto: '', categoria: '' }
@@ -184,7 +182,7 @@ export function Estoque() {
                 {filteredProducts.length === 0
                   ? <tr><td colSpan={6} className="empty-row">Nenhum resultado encontrado</td></tr>
                   : filteredProducts.map((p, i) => {
-                    const color = STATUS_COLOR[p.status] || '#888'
+                    const color = STATUS_STORAGE_COLOR[p.status] || '#888'
                     return (
                       <tr key={i}>
                         <td>{p.name}</td>
@@ -214,58 +212,54 @@ export function Estoque() {
       </PageLayout>
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">Novo Produto</h2>
-              <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div>
-                <label className="modal-label">Produto *</label>
-                <select className="modal-input" value={form.name}
-                  onChange={e => {
-                    const selected = catalogItems.find(c => c.name === e.target.value)
-                    setForm(f => ({ ...f, name: e.target.value, category: selected?.category || '' }))
-                  }}>
-                  <option value="">Selecione um produto...</option>
-                  {catalogItems.map((c, i) => (
-                    <option key={i} value={c.name}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="modal-label">Categoria</label>
-                <input className="modal-input" placeholder="Preenchida automaticamente" value={form.category} readOnly
-                  style={{ opacity: 0.6, cursor: 'not-allowed' }} />
-              </div>
-              <div className="modal-row">
-                <div className="modal-field">
-                  <label className="modal-label">Quantidade *</label>
-                  <input className="modal-input" type="number" placeholder="0" value={form.stock}
-                    onChange={e => setForm(f => ({ ...f, stock: e.target.value }))} />
-                </div>
-                <div className="modal-field">
-                  <label className="modal-label">Preço por Unidade (R$) *</label>
-                  <input className="modal-input" type="number" placeholder="0,00" value={form.price}
-                    onChange={e => setForm(f => ({ ...f, price: e.target.value }))} />
-                </div>
-              </div>
-              <div>
-                <label className="modal-label">Status</label>
-                <select className="modal-input" value={form.status}
-                  onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
-                  <option>Em Estoque</option>
-                  <option>Em Pedido</option>
-                </select>
-              </div>
-            </div>
+       <Modal
+        title='Novo Produto'
+        onClose={() => setShowModal(false)}
+        footer= {
             <div className="modal-footer">
               <button className="btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
               <button className="btn-primary" onClick={handleSubmit}>Salvar</button>
+            </div>          
+        }>
+          <div>
+            <label className="modal-label">Produto *</label>
+              <select className="modal-input" value={form.name}
+                onChange={e => {
+                  const selected = catalogItems.find(c => c.name === e.target.value)
+                  setForm(f => ({ ...f, name: e.target.value, category: selected?.category || '' }))
+                }}>
+                <option value="">Selecione um produto...</option>
+                  {catalogItems.map((c, i) => (
+                    <option key={i} value={c.name}>{c.name}</option>
+                  ))}
+              </select>
+        </div>
+        <div>
+          <label className="modal-label">Categoria</label>
+          <input className="modal-input" placeholder="Preenchida automaticamente" value={form.category} readOnly
+               style={{ opacity: 0.6, cursor: 'not-allowed' }} />
+        </div>
+          <div className="modal-row">
+            <div className="modal-field">
+              <label className="modal-label">Quantidade *</label>
+              <input className="modal-input" type="number" placeholder="0" value={form.stock}
+                onChange={e => setForm(f => ({ ...f, stock: e.target.value }))} />
+          </div>
+          <div className="modal-field">
+              <label className="modal-label">Preço por Unidade (R$) *</label>
+              <input className="modal-input" type="number" placeholder="0,00" value={form.price}
+                onChange={e => setForm(f => ({ ...f, price: e.target.value }))} />
             </div>
           </div>
-        </div>
+          <div>
+            <label className="modal-label">Status</label>
+            <select className="modal-input" value={form.status}
+              onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
+              <option>Em Estoque</option>
+              <option>Em Pedido</option>
+            </select>
+          </div>
+       </Modal>
       )}
 
   </>)

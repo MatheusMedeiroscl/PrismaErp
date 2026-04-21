@@ -2,14 +2,13 @@
 
 /* Overlay */
 .modal-overlay {
-  position: fixed;
-  inset: 0;
+  position: fixed;    /* ← tem que ser fixed, não absolute ou relative */
+  inset: 0;           /* ← equivale a top/right/bottom/left: 0 */
   background: rgba(0, 0, 0, 0.45);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center;     /* ← centraliza verticalmente */
+  justify-content: center; /* ← centraliza horizontalmente */
   z-index: 1000;
-  animation: fadeIn 0.15s ease;
 }
 
 @keyframes fadeIn {
@@ -23,8 +22,12 @@
   border-radius: 12px;
   width: 100%;
   max-width: 480px;
+  max-height: 90vh;      /* ← era min-height, troca pra max-height */
+  overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,0.15);
   animation: slideUp 0.18s ease;
+  display: flex;             /* ← adiciona */
+  flex-direction: column;    /* ← adiciona */
 }
 
 @keyframes slideUp {
@@ -38,6 +41,7 @@
   justify-content: space-between;
   padding: 20px 24px 16px;
   border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
 }
 
 .modal-title {
@@ -66,6 +70,9 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .modal-label {
@@ -110,6 +117,7 @@
   gap: 10px;
   padding: 16px 24px 20px;
   border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
 }
 
 /* Filter popover */

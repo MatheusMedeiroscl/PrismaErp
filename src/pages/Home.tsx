@@ -7,10 +7,10 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
 } from 'recharts'
 import '../style/Dashboard.css'
-import '../style/Modal.css'
 import { PageLayout } from '../shared/layout/PageLayout'
 import { formatCurrency } from '../shared/utils/Format'
 import { KpiCard } from '../components/Kpi'
+import { STATUS_COLOR } from '../shared/utils/Colors'
 
 interface DashboardData {
   totalRevenue: number
@@ -21,13 +21,6 @@ interface DashboardData {
   stockVsDemand: { category: string; stock: number; demand: number }[]
   recentSales: any[]
   topProducts: any[]
-}
-
-const STATUS_COLOR: Record<string, string> = {
-  'Recebido': '#22c55e',
-  'A Receber': '#f59e0b',
-  'Pendente': '#3b82f6',
-  'Cancelado': '#ef4444',
 }
 
 const INITIAL_FILTER = { cliente: '', data: '' }

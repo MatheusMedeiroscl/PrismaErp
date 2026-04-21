@@ -3,9 +3,10 @@ import { useEffect, useState, useRef } from 'react'
 import { Service } from '../shared/services/Service'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Label } from 'recharts'
 import '../style/Dashboard.css'
-import '../style/Modal.css'
 import { PageLayout } from '../shared/layout/PageLayout'
 import { KpiCard } from '../components/Kpi'
+import { STATUS_COLOR } from '../shared/utils/Colors'
+import { Modal } from '../components/Modal'
 
 interface VendasData {
   sales: any[]
@@ -18,12 +19,7 @@ interface SaleItem {
   unitPrice: number
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  'Recebido': '#22c55e',
-  'A Receber': '#f59e0b',
-  'Pendente': '#3b82f6',
-  'Cancelado': '#ef4444',
-}
+
 
 const STATUS_OPTIONS = ['A Receber', 'Recebido', 'Pendente', 'Cancelado']
 const EMPTY_ITEM: SaleItem = { product: '', quantity: 1, unitPrice: 0 }
@@ -423,32 +419,17 @@ export function Vendas() {
       </PageLayout>
 
       {showModal && (
-        <div className="modal-overlay" onClick={resetModal}>
-          <div
-              className="modal"
-              style={{
-                maxWidth: 560,
-                overflow: 'hidden',
-                maxHeight: '90vh',        // ← trava a altura máxima do modal
-                height: '90vh',           // ← força o modal a ocupar a altura toda
-                display: 'flex',
-                flexDirection: 'column',  // ← empilha header / body / footer
-              }}
-              onClick={e => e.stopPropagation()}
-            >
-            <div className="modal-header">
-              <h2 className="modal-title">Nova Venda</h2>
-              <button className="modal-close" onClick={resetModal}>✕</button>
+       <Modal
+       title='Nova Venda'
+       onClose={resetModal}
+       footer= {
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={resetModal}>Cancelar</button>
+              <button className="btn-primary" onClick={handleSubmit}>Salvar</button>
             </div>
-            <div
-                className="modal-body"
-                style={{
-                  overflowY: 'scroll',  // ← força a barra sempre visível
-                  flex: 1,              // ← ocupa todo o espaço entre header e footer
-                  minHeight: 0,         // ← essencial: sem isso o flexbox ignora o overflow
-                }}
-              >
-              <div className="modal-row">
+       }>
+
+        <div className="modal-row">
                 <div className="modal-field">
                   <label className="modal-label">Cliente *</label>
                   <SearchSelect
@@ -560,13 +541,7 @@ export function Vendas() {
                 <input className="modal-input" type="date" value={form.date}
                   onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
               </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={resetModal}>Cancelar</button>
-              <button className="btn-primary" onClick={handleSubmit}>Salvar</button>
-            </div>
-          </div>
-        </div>
+       </Modal>
       )}
   
   </>)

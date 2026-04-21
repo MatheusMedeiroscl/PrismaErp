@@ -1,4 +1,3 @@
-// src/shared/layout/PageLayout.tsx
 import type { ReactNode } from 'react'
 import './PageLayout.css'
 
