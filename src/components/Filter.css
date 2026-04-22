@@ -1,0 +1,93 @@
+.filter-wrapper {
+  position: relative;
+}
+
+.filter-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  width: 240px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: slideUp 0.15s ease;
+}
+
+.filter-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.filter-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.filter-input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #1a1a2e;
+  outline: none;
+  font-family: inherit;
+}
+
+.filter-input:focus {
+  border-color: #6366f1;
+}
+
+.btn-ghost {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #6366f1;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: left;
+  margin-top: 4px;
+}
+
+.btn-ghost:hover {
+  text-decoration: underline;
+}
+
+.btn-filter-active {
+  border-color: #6366f1 !important;
+  color: #6366f1 !important;
+}
+
+.filter-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #6366f1;
+  border-radius: 50%;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.table-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+
+.empty-row {
+  text-align: center;
+  color: #9ca3af;
+  padding: 24px !important;
+  font-size: 13px;
+}

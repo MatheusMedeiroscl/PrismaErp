@@ -7,6 +7,10 @@ import { PageLayout } from '../shared/layout/PageLayout'
 import { KpiCard } from '../components/Kpi'
 import { STATUS_COLOR } from '../shared/utils/Colors'
 import { Modal } from '../components/Modal'
+import { useModal } from '../shared/hooks/Modal'
+import { formatCurrency } from '../shared/utils/Format'
+import { FilterPopover } from '../components/Filter'
+import { SearchSelect } from '../components/SearchSelect'
 
 interface VendasData {
   sales: any[]
@@ -19,135 +23,32 @@ interface SaleItem {
   unitPrice: number
 }
 
-
-
 const STATUS_OPTIONS = ['A Receber', 'Recebido', 'Pendente', 'Cancelado']
 const EMPTY_ITEM: SaleItem = { product: '', quantity: 1, unitPrice: 0 }
 const INITIAL_FORM = { client: '', seller: '', payment: 'Pix', status: 'A Receber', date: '' }
 const INITIAL_FILTER = { cliente: '', data: '' }
 
-// Componente de select com busca reutilizável
-function SearchSelect({
-  options,
-  value,
-  onChange,
-  placeholder,
-  footer,
-}: {
-  options: string[]
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  footer?: React.ReactNode
-}) {
-  const [search, setSearch] = useState(value)
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({})
-
-  useEffect(() => { setSearch(value) }, [value])
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
-
-  function openDropdown() {
-    if (inputRef.current) {
-      const rect = inputRef.current.getBoundingClientRect()
-      setDropdownStyle({
-        position: 'fixed',
-        top: rect.bottom + 2,
-        left: rect.left,
-        width: rect.width,
-        zIndex: 99999,
-        background: '#ffffff',
-        border: '1px solid var(--color-border-secondary)',
-        borderRadius: 8,
-        maxHeight: 200,
-        overflowY: 'auto',
-        boxShadow: '0 8px 24px rgba(151, 151, 151, 0.6)',
-      })
-    }
-    setOpen(true)
-  }
-
-  const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()))
-
-  return (
-    <div ref={ref} style={{ position: 'relative' }}>
-      <input
-        ref={inputRef}
-        className="modal-input"
-        style={{ margin: 0 }}
-        placeholder={placeholder}
-        value={search}
-        onChange={e => { setSearch(e.target.value); openDropdown() }}
-        onFocus={openDropdown}
-      />
-      {open && (
-        <div style={dropdownStyle}>
-          {filtered.length === 0
-            ? <div style={{ padding: '8px 12px', fontSize: 13, color: 'var(--color-text-secondary)' }}>
-                Nenhum resultado
-              </div>
-            : filtered.map((o, i) => (
-              <div key={i}
-                style={{ padding: '8px 12px', fontSize: 13, cursor: 'pointer', color: 'var(--color-text-primary)' }}
-                onMouseDown={() => { onChange(o); setSearch(o); setOpen(false) }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-background-secondary)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                {o}
-              </div>
-            ))}
-          {footer && (
-            <div style={{ borderTop: '1px solid var(--color-border-tertiary)' }}>
-              {footer}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
 
 export function Vendas() {
   const [data, setData] = useState<VendasData | null>(null)
   const [catalogItems, setCatalogItems] = useState<any[]>([])
   const [clients, setClients] = useState<any[]>([])
-  const [showModal, setShowModal] = useState(false)
-  const [showFilter, setShowFilter] = useState(false)
   const [showNewClient, setShowNewClient] = useState(false)
   const [newClientForm, setNewClientForm] = useState({ establishment: '', responsible: '' })
   const [form, setForm] = useState(INITIAL_FORM)
   const [items, setItems] = useState<SaleItem[]>([{ ...EMPTY_ITEM }])
   const [filter, setFilter] = useState(INITIAL_FILTER)
   const [openActionId, setOpenActionId] = useState<string | null>(null)
-  const filterRef = useRef<HTMLDivElement>(null)
   const actionRef = useRef<HTMLDivElement>(null)
+  const saleModal = useModal();
 
+  
   useEffect(() => {
     Service.GetSales().then(setData)
     Service.GetCatalog().then(r => setCatalogItems(r.catalogItems))
     Service.GetClients().then(r => setClients(r.clients))
   }, [])
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (filterRef.current && !filterRef.current.contains(e.target as Node)) setShowFilter(false)
-      if (actionRef.current && !actionRef.current.contains(e.target as Node)) setOpenActionId(null)
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  function formatCurrency(v: number) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
-  }
 
   function calcTotal() {
     return items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0)
@@ -163,8 +64,7 @@ export function Vendas() {
     setItems(prev => prev.length === 1 ? prev : prev.filter((_, i) => i !== index))
   }
 
-  function resetModal() {
-    setShowModal(false)
+  function resetForm() {
     setShowNewClient(false)
     setForm(INITIAL_FORM)
     setItems([{ ...EMPTY_ITEM }])
@@ -186,7 +86,8 @@ export function Vendas() {
     if (validItems.length === 0) return
 
 
-    resetModal()
+    resetForm()
+    saleModal.close()
 
     const total = calcTotal()
     const productsData = await Service.GetProducts()
@@ -274,7 +175,7 @@ export function Vendas() {
   return (<>
       <PageLayout title='Análise de Vendas'
         actions= {
-              <button className="btn-primary" onClick={() => setShowModal(true)}>+ Novo Registro</button>
+              <button className="btn-primary" onClick={saleModal.open}>+ Novo Registro</button>
       }>
 
         <div className="dashboard-inner">
@@ -345,24 +246,24 @@ export function Vendas() {
           <div className="table-card full-width">
             <div className="table-card-header">
               <h3 className="chart-title">Atividades Recentes</h3>
-              <div className="filter-wrapper" ref={filterRef}>
-                <button className={`btn-secondary ${hasFilter ? 'btn-filter-active' : ''}`}
-                  onClick={() => setShowFilter(v => !v)}>
-                  ≡ Filtros {hasFilter && <span className="filter-dot" />}
-                </button>
-                {showFilter && (
-                  <div className="filter-popover">
-                    <p className="filter-title">Filtrar por</p>
-                    <label className="filter-label">Cliente</label>
-                    <input className="filter-input" placeholder="Nome do cliente..."
-                      value={filter.cliente} onChange={e => setFilter(f => ({ ...f, cliente: e.target.value }))} />
-                    <label className="filter-label">Data</label>
-                    <input className="filter-input" type="date"
-                      value={filter.data} onChange={e => setFilter(f => ({ ...f, data: e.target.value }))} />
-                    <button className="btn-ghost" onClick={() => setFilter(INITIAL_FILTER)}>Limpar filtros</button>
-                  </div>
-                )}
-              </div>
+              <FilterPopover
+                hasFilter={hasFilter}
+                onClear={() => setFilter(INITIAL_FILTER)}
+                fields={[
+                  {
+                    label: 'Cliente',
+                    placeholder: 'Nome do cliente...',
+                    value: filter.cliente,
+                    onChange: v => setFilter(f => ({ ...f, cliente: v })),
+                  },
+                  {
+                    label: 'Data',
+                    type: 'date',
+                    value: filter.data,
+                    onChange: v => setFilter(f => ({ ...f, data: v })),
+                  },
+                ]}
+              />
             </div>
             <table className="data-table">
               <thead>
@@ -418,13 +319,13 @@ export function Vendas() {
         </div>
       </PageLayout>
 
-      {showModal && (
+      {saleModal.isOpen && (
        <Modal
        title='Nova Venda'
-       onClose={resetModal}
+       onClose={saleModal.close}
        footer= {
             <div className="modal-footer">
-              <button className="btn-secondary" onClick={resetModal}>Cancelar</button>
+              <button className="btn-secondary" onClick={saleModal.close}>Cancelar</button>
               <button className="btn-primary" onClick={handleSubmit}>Salvar</button>
             </div>
        }>

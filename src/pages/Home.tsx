@@ -1,5 +1,5 @@
 // src/pages/Home.tsx
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../shared/context/AuthContext'
 import { Service } from '../shared/services/Service'
 import {
@@ -11,6 +11,7 @@ import { PageLayout } from '../shared/layout/PageLayout'
 import { formatCurrency } from '../shared/utils/Format'
 import { KpiCard } from '../components/Kpi'
 import { STATUS_COLOR } from '../shared/utils/Colors'
+import { FilterPopover } from '../components/Filter'
 
 interface DashboardData {
   totalRevenue: number
@@ -28,25 +29,13 @@ const INITIAL_FILTER = { cliente: '', data: '' }
 export function Home() {
   const { user } = useAuth()
   const [data, setData] = useState<DashboardData | null>(null)
-  const [showFilter, setShowFilter] = useState(false)
   const [filter, setFilter] = useState(INITIAL_FILTER)
-  const filterRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     Service.GetDashboard().then(setData)
   }, [])
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
-        setShowFilter(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  const filteredSales = (data?.recentSales ?? []).filter(s => {
+  const RecentSales = (data?.recentSales ?? []).filter(s => {
     const matchCliente = !filter.cliente || s.client.toLowerCase().includes(filter.cliente.toLowerCase())
     const matchData = !filter.data || s.date?.startsWith(filter.data)
     return matchCliente && matchData
@@ -114,24 +103,23 @@ export function Home() {
           <div className="table-card full-width">
             <div className="table-card-header">
               <h3 className="chart-title">Vendas Recentes</h3>
-              <div className="filter-wrapper" ref={filterRef}>
-                <button className={`btn-secondary ${hasFilter ? 'btn-filter-active' : ''}`}
-                  onClick={() => setShowFilter(v => !v)}>
-                  ≡ Filtros {hasFilter && <span className="filter-dot" />}
-                </button>
-                {showFilter && (
-                  <div className="filter-popover">
-                    <p className="filter-title">Filtrar por</p>
-                    <label className="filter-label">Cliente</label>
-                    <input className="filter-input" placeholder="Nome do cliente..."
-                      value={filter.cliente} onChange={e => setFilter(f => ({ ...f, cliente: e.target.value }))} />
-                    <label className="filter-label">Data</label>
-                    <input className="filter-input" type="date"
-                      value={filter.data} onChange={e => setFilter(f => ({ ...f, data: e.target.value }))} />
-                    <button className="btn-ghost" onClick={() => setFilter(INITIAL_FILTER)}>Limpar filtros</button>
-                  </div>
-                )}
-              </div>
+              <FilterPopover
+                hasFilter={hasFilter}
+                onClear={() => setFilter(INITIAL_FILTER)}
+                fields={[
+                  {
+                    label: 'Cliente',
+                    placeholder: 'Nome do Cliente',
+                    value: filter.cliente,
+                    onChange: v => setFilter(f => ({...f, cliente: v}))
+                  },
+                  {
+                    label: 'Data',
+                    type: 'date',
+                    value: filter.data,
+                    onChange: v => setFilter(f => ({...f, cliente: v}))
+                  }
+                ]}/>
             </div>
             <table className="data-table">
               <thead>
@@ -141,9 +129,9 @@ export function Home() {
                 </tr>
               </thead>
               <tbody>
-                {filteredSales.length === 0
+                {RecentSales.length === 0
                   ? <tr><td colSpan={6} className="empty-row">Nenhum resultado encontrado</td></tr>
-                  : filteredSales.map((sale, i) => (
+                  : RecentSales.map((sale, i) => (
                     <tr key={i}>
                       <td>{sale.id}</td>
                       <td><span className="status-badge" style={{ background: STATUS_COLOR[sale.status] + '22', color: STATUS_COLOR[sale.status] }}>{sale.status}</span></td>
@@ -155,8 +143,8 @@ export function Home() {
                   ))}
               </tbody>
             </table>
+            </div>
           </div>
-        </div>
       </PageLayout>
     </>)
 }

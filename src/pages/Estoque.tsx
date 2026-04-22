@@ -1,5 +1,5 @@
 // src/pages/Estoque.tsx
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { Service } from '../shared/services/Service'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
 import '../style/Dashboard.css'
@@ -7,6 +7,9 @@ import { PageLayout } from '../shared/layout/PageLayout'
 import { KpiCard } from '../components/Kpi'
 import { STATUS_STORAGE_COLOR } from '../shared/utils/Colors'
 import { Modal } from '../components/Modal'
+import { FilterPopover } from '../components/Filter'
+import { formatCurrency } from '../shared/utils/Format'
+
 
 interface EstoqueData {
   products: any[]
@@ -15,8 +18,6 @@ interface EstoqueData {
   monthlyMovement: { month: string; entries: number; exits: number }[]
 }
 
-
-
 const INITIAL_FORM = { name: '', category: '', stock: '', price: '', status: 'Em Estoque' }
 const INITIAL_FILTER = { produto: '', categoria: '' }
 
@@ -24,29 +25,13 @@ export function Estoque() {
   const [data, setData] = useState<EstoqueData | null>(null)
   const [catalogItems, setCatalogItems] = useState<any[]>([])
   const [showModal, setShowModal] = useState(false)
-  const [showFilter, setShowFilter] = useState(false)
   const [form, setForm] = useState(INITIAL_FORM)
   const [filter, setFilter] = useState(INITIAL_FILTER)
-  const filterRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     Service.GetProducts().then(setData)
     Service.GetCatalog().then(r => setCatalogItems(r.catalogItems))
   }, [])
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
-        setShowFilter(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  function formatCurrency(v: number) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
-  }
 
   function getUrgency(product: any) {
     if (product.status === 'Em Pedido') return { label: 'Em Pedido', color: '#f59e0b' }
@@ -146,26 +131,23 @@ export function Estoque() {
           <div className="table-card full-width">
             <div className="table-card-header">
               <h3 className="chart-title">Produtos</h3>
-              <div className="filter-wrapper" ref={filterRef}>
-                <button
-                  className={`btn-secondary ${hasFilter ? 'btn-filter-active' : ''}`}
-                  onClick={() => setShowFilter(v => !v)}
-                >
-                  ≡ Filtros {hasFilter && <span className="filter-dot" />}
-                </button>
-                {showFilter && (
-                  <div className="filter-popover">
-                    <p className="filter-title">Filtrar por</p>
-                    <label className="filter-label">Produto</label>
-                    <input className="filter-input" placeholder="Nome do produto..."
-                      value={filter.produto} onChange={e => setFilter(f => ({ ...f, produto: e.target.value }))} />
-                    <label className="filter-label">Categoria</label>
-                    <input className="filter-input" placeholder="Ex: Frutas..."
-                      value={filter.categoria} onChange={e => setFilter(f => ({ ...f, categoria: e.target.value }))} />
-                    <button className="btn-ghost" onClick={() => setFilter(INITIAL_FILTER)}>Limpar filtros</button>
-                  </div>
-                )}
-              </div>
+              <FilterPopover
+                hasFilter= {hasFilter}
+                onClear={() => {setFilter(INITIAL_FILTER)}}
+                fields={[
+                  {
+                    label: 'Produto',
+                    placeholder: 'Nome do produto',
+                    value: filter.produto,
+                    onChange: v => setFilter(f => ({...f, produto: v}))
+                  },
+                  {
+                    label: 'Categoria',
+                    placeholder: 'Nome da categoria',
+                    value: filter.categoria,
+                    onChange: v => setFilter(f => ({...f, categoria: v}))
+                  }                  
+                  ]}/>
             </div>
             <table className="data-table">
               <thead>

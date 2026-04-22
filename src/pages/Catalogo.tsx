@@ -6,6 +6,7 @@ import { PageLayout } from '../shared/layout/PageLayout'
 import { KpiCard } from '../components/Kpi'
 import { formatCurrency } from '../shared/utils/Format'
 import { Modal } from '../components/Modal'
+import { useModal } from '../shared/hooks/Modal'
 
 const INITIAL_PRODUCT_FORM = { name: '', category: '' }
 const INITIAL_CLIENT_FORM = { establishment: '', responsible: '', cnpj: '' }
@@ -23,20 +24,14 @@ export function Catalogo() {
   const [productForm, setProductForm] = useState(INITIAL_PRODUCT_FORM)
   const [clientForm, setClientForm] = useState(INITIAL_CLIENT_FORM)
   const [search, setSearch] = useState('')
-
+  const modal = useModal();
   useEffect(() => {
     Service.GetCatalog().then(r => setProducts(r.catalogItems))
     Service.GetClients().then(r => setClients(r.clients))
     Service.GetSales().then(r => setSales(r.sales))
   }, [])
 
-  function openNewModal() {
-    setEditingProduct(null)
-    setEditingClient(null)
-    setProductForm(INITIAL_PRODUCT_FORM)
-    setClientForm(INITIAL_CLIENT_FORM)
-    setShowModal(true)
-  }
+
 
   function openEditProduct(product: any) {
     setEditingProduct(product)
@@ -54,13 +49,7 @@ export function Catalogo() {
     setShowModal(true)
   }
 
-  function closeModal() {
-    setShowModal(false)
-    setEditingProduct(null)
-    setEditingClient(null)
-    setProductForm(INITIAL_PRODUCT_FORM)
-    setClientForm(INITIAL_CLIENT_FORM)
-  }
+
 
   async function handleSubmitProduct() {
     if (!productForm.name) return
@@ -69,7 +58,7 @@ export function Catalogo() {
     } else {
       await Service.CreateCatalogItem({ name: productForm.name, category: productForm.category })
     }
-    closeModal()
+    modal.close()
     Service.GetCatalog().then(r => setProducts(r.catalogItems))
   }
 
@@ -80,7 +69,7 @@ export function Catalogo() {
     } else {
       await Service.CreateClient(clientForm)
     }
-    closeModal()
+    modal.close()
     Service.GetClients().then(r => setClients(r.clients))
   }
 
@@ -150,7 +139,7 @@ export function Catalogo() {
   return (<>
       <PageLayout title='Catálogo'
         actions = {
-            <button className="btn-primary" onClick={openNewModal}>
+            <button className="btn-primary" onClick={() => {modal.open()}}>
               + {activeTab === 'products' ? 'Novo Produto' : 'Novo Cliente'}
             </button>
       }>
@@ -351,11 +340,11 @@ export function Catalogo() {
       {/* Modal */}
       {showModal && (
         <Modal
-          onClose={closeModal}
+          onClose={() => {modal.close()}}
           title={activeTab === 'products' ? editingProduct ? 'Editar Produto' : 'Novo Produto' : editingClient ? 'Editar Cliente' : 'Novo Cliente'}
           footer={
             <>
-              <button className="btn-secondary" onClick={closeModal}>Cancelar</button>
+              <button className="btn-secondary" onClick={() => {modal.close()}}>Cancelar</button>
               <button className="btn-primary" onClick={activeTab === 'products' ? handleSubmitProduct : handleSubmitClient}>
                 Salvar
               </button>
