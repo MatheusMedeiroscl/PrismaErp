@@ -1,8 +1,8 @@
 import type {  ReactNode } from "react"
 import { createPortal } from "react-dom"
+import './styles/Modal.css'
 
 
-import './Modal.css'
   interface IModalProps{
     title: string,
     onClose: () => void,

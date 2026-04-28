@@ -1,40 +1,52 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
-import { Service } from '../services/Service'
 import { useNavigate } from 'react-router-dom'
-
-interface User {
-  id: string
-  name: string
-  email: string
-}
+import { UserServices } from '../services/UserServices'
 
 interface AuthContextData {
-  user: User | null
+  token: string | null
   isAuthenticated: boolean
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => void
 }
 
+interface User {
+  name: string;
+  email: string;
+  id: number;
+}
+
 const AuthContext = createContext({} as AuthContextData)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const navigate = useNavigate()
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem('token') // persiste o token ao recarregar a página
+  );
+  const navigate = useNavigate();
 
-  const isAuthenticated = !!user
+  const isAuthenticated = !!token;
 
   async function signIn(email: string, password: string) {
-    const data = await Service.Login({ email, password })
-    setUser(data.user)
+    const receivedToken = await UserServices.login(email, password);
+
+    localStorage.setItem('token', receivedToken);
+    setToken(receivedToken);
+
+
+    const userData = await UserServices.getme(receivedToken)
+    setUser(userData);
+
+    navigate('/home') 
   }
 
   function signOut() {
-    setUser(null)
-    navigate('/login')  // redireciona após logout
+    localStorage.removeItem('token');
+    setToken(null);
+    navigate('/login');
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, signIn, signOut }}>
+    <AuthContext.Provider value={{ token, isAuthenticated, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   )

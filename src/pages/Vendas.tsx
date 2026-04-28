@@ -1,7 +1,7 @@
 // src/pages/Vendas.tsx
 import { useEffect, useState, useRef } from 'react'
 import { Service } from '../shared/services/Service'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Label } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import '../style/Dashboard.css'
 import { PageLayout } from '../shared/layout/PageLayout'
 import { KpiCard } from '../components/Kpi'

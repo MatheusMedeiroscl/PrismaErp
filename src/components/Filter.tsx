@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import './Filter.css'
+import './styles/Filter.css'
 
 interface FilterField {
   label: string,
