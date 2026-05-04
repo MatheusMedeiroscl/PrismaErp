@@ -3,7 +3,7 @@ const URL = 'http://localhost:8080'
 
 interface Iupdate {
     id: number
-    status: string | null;
+    type: string | undefined;
     quantity: number | null;
 }
 
