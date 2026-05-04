@@ -1,15 +1,12 @@
 const URL = 'http://localhost:8080'
 
-export interface IProductForm {
+ interface IProduct {
     name: string;
     category: string;
     costPrice: number;
     salePrice: number;
 }
 
-export interface IProduct extends IProductForm {
-    id: number;
-}
 
 export const ProductService = {
     async getAll(token: string | null){
@@ -42,7 +39,7 @@ export const ProductService = {
         return response.json();
 
     },
-   async create(product: IProductForm, token: string | null){
+   async create(product: IProduct, token: string | null){
         console.log('token:', token)
         const response = await fetch(`${URL}/products`, {
             
@@ -60,7 +57,7 @@ export const ProductService = {
 
         return response.json();
     }, 
-    async update(id: number, product: IProductForm, token: string | null){
+    async update(id: number, product: IProduct, token: string | null){
               const response = await fetch(`${URL}/products/${id}`, {
             
         method: "POST",
