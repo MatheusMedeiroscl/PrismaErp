@@ -1,3 +1,5 @@
+import './styles/kpi.css'
+
 interface KpiCardProps {
   label: string
   value: string | any

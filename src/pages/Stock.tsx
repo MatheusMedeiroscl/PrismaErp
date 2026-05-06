@@ -2,12 +2,16 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../shared/context/AuthContext";
 import { PageLayout } from "../shared/layout/PageLayout";
 import { StockService } from "../shared/services/StockServices";
-import { formatCurrency } from "../shared/utils/Format";
+import { formatCurrency, statusLabel } from "../shared/utils/Format";
 import { Modal } from "../components/Modal";
 import { useModal } from "../shared/hooks/Modal";
 import { ProductService } from "../shared/services/ProductService";
+import { FilterPopover } from "../components/Filter";
+import { STATUS_STORAGE_COLOR } from "../shared/utils/Colors";
 
-
+import '../style/Stock.css'
+import '../style/index.css'
+import { KpiCard } from "../components/Kpi";
 interface Istock {
     id: number,
     name: string,
@@ -26,28 +30,26 @@ interface IProduct {
 }
 
 const INITIAL_FORM = { productId: 0, quantity: '', status: 'IN' }
+const INITIAL_FILTER = {name: ''}
 
 export function StockPage(){
     const {token} = useAuth();
+    const [refresh, setRefresh] = useState(false);
     const [stocks, setStocks] = useState<Istock[]>([]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [refresh, setRefresh] = useState(false)
     const { isOpen, open, close } = useModal();
     const { isOpen: isEditOpen, open: openEdit, close: closeEdit } = useModal(); 
     const [selectedStock, setSelectedStock] = useState<Istock | null>(null);
     const [form, setForm] = useState(INITIAL_FORM);
     const [products, setProducts] = useState<IProduct[]>([]);
-    const statusLabel: Record<string, string> = {
-        AVAILABLE: "Estoque",
-        ORDER: "Pedido",
-    };
+    const [filter, setFilter] = useState(INITIAL_FILTER)
 
     useEffect(() => {
         StockService.getAll(token).then(r => setStocks(r))
         ProductService.getAll(token).then(p => setProducts(p))
     }, [refresh])
 
-    async function handleCreate(){
+    async function registryStock(){
     if(!form.productId || !form.quantity)return 
         await StockService.create(token, {
             idProduct: Number(form.productId),
@@ -55,13 +57,19 @@ export function StockPage(){
             quantity: Number(form.quantity)
         })
         close()
-        setRefresh(!refresh);    
-    
-
-        
+        setRefresh(!refresh);            
     }
 
-    const handleUpdate = (stock: Istock) => {
+    const [dropdownPos, setDropdownPos] = useState<{top: number, left: number, stock: Istock} | null>(null);
+
+    const handleDropdown = (e: React.MouseEvent<HTMLButtonElement>, stock: Istock) => {
+        if(dropdownPos) return setDropdownPos(null); // fecha se já está aberto
+        const rect = e.currentTarget.getBoundingClientRect();
+        setDropdownPos({ top: rect.bottom, left: rect.right - 160, stock });
+
+    }
+
+    const handleUpdate = (stock: Istock, type: string) => {
         let stockForUpdate = {
             id: stock.id,
             quantity: null,
@@ -93,21 +101,40 @@ export function StockPage(){
         setRefresh(!refresh);    
 
     }
+    const filteredStocks = stocks.filter(s => {
+        const matchProduto = !filter.name || s.name.toLowerCase().includes(filter.name.toLowerCase())
+        return matchProduto
+    })
+  const hasFilter = !!(filter.name)
+
+  const kpis = [
+    {label: 'Total de Produtos', value: stocks.reduce((acc, s) => acc + s.Quantity, 0)},
+    {label: 'Valor Total em Estoque', value: formatCurrency(stocks.reduce((acc, s) => acc + (s.costPrice * s.Quantity), 0))},
+    {label: 'Produtos em Pedido', value: stocks.filter(s => s.type === 'ORDER').reduce((acc, s) => acc + s.Quantity, 0)},
+
+  ]
 
 
 
     return (
     <PageLayout 
-        title= "Estoque"
-        actions = {<button onClick={open}> + Novo Registro </button>}
+        title= "Análise de Estoque"
+        actions = {<button onClick={open} className="btn-primary"> + Novo Registro </button>}
     >
 
+      <div className="dashboard-inner">
+        <div className="kpi-cards-row">
+          {kpis.map(kpi => (
+            <KpiCard className="kpi-card" key={kpi.label} label={kpi.label} value={kpi.value} />
+          ))}
+        </div>
+    </div>
         {isOpen && (
             <Modal title="Novo Registro" onClose={close}
              footer= {
                 <div>
                     <button className="btn-secondary" onClick={close}>Cancelar</button>
-                    <button className="btn-primary" onClick={handleCreate}>Salvar</button>
+                    <button className="btn-primary" onClick={registryStock}>Salvar</button>
                 </div>
              }>
                 <label className="modal-label">Produto *</label>
@@ -136,49 +163,61 @@ export function StockPage(){
                 </div>
             </Modal>
         )}
+
+        {/* TABELA DE ESTOQUE */}
+        <div className="table-card full-width">
+        <div className="table-card-header">
+            <h3 className="chart-title">Produtos</h3>
+            <FilterPopover
+              hasFilter={hasFilter}
+              onClear={() => setFilter(INITIAL_FILTER)}
+              fields={[
+                { label: 'Produto', placeholder: 'Nome do produto', value: filter.name, onChange: v => setFilter(f => ({ ...f, produto: v })) },
+              ]} />
+          </div>
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Produto</th>
-                    <th>Quantidade</th>
-                    <th>Total</th>
-                    <th>Data</th>
-                    <th>status</th>
-                    <th>ações</th>
+                    <th>ID</th> <th>Produto</th> <th>Quantidade</th> <th>Total</th> <th>Data</th> <th>status</th> <th>ações</th>
                 </tr>
             </thead>
             <tbody>
-            {stocks.map(stock => (
-                <tr key={String(stock.id)}>
-                    <td>{stock.id}</td>
+            {filteredStocks.length === 0 
+            ? <tr><td colSpan={6} className="empty-row">Nenhum resultado encontrado</td></tr>
+            : filteredStocks.map((stock, i) => {
+                const color = STATUS_STORAGE_COLOR[stock.type] || '#888'
 
+                return (
+                
+                <tr key={i}>
+                    <td>{stock.id}</td>
                     <td>{stock.name}</td>
                     <td>{stock.Quantity}</td>
                     <td>{formatCurrency(stock.costPrice * stock.Quantity)}</td>
                     <td>{new Date(stock.createAt).toLocaleDateString("pt-BR")}</td>
-                    <td>{statusLabel[stock.type]}</td>
+                    <td>
+                        <span className="status-badge" style={{ background: color + '22', color }}>
+                          {statusLabel[stock.type]}
+                        </span>
+                    </td>
                     {stock.type === "ORDER" ? (
                     <td style={{ position: "relative" }}>
-                        <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="btnActions">
-                            ···
-                        </button>
-
-                        {isDropdownOpen && (
-                            <div className= "dropdownCard">
-                                <p className="dropdownBtn" onClick={() => handleUpdate(stock)}
+                        <button onClick={(e) => handleDropdown(e, stock)} className="btn-icon"> ··· </button>
+                        {dropdownPos  && (
+                            <div  style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, zIndex: 1000 }}  className= "dropdownCard">
+                                <p className="dropdownBtn" onClick={() => handleUpdate(stock, "AVAILABLE")}
                                     onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
                                     onMouseLeave={e => (e.currentTarget.style.background = "none")}
                                 >
                                 <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
-                                    Recebido
+                                     Recebido
                                 </p>
                                 <p className="dropdownBtn" onClick={() => handleEditModal(stock)}
                                     onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
                                     onMouseLeave={e => (e.currentTarget.style.background = "none")}
                                 >
                                 <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#262c28", display: "inline-block" }} />
-                                    Editar Pedido
+                                     Editar Pedido
                                 </p>   
 
                                 <p className="dropdownBtn" onClick={() => handleDelete(stock.id)}
@@ -186,20 +225,16 @@ export function StockPage(){
                                     onMouseLeave={e => (e.currentTarget.style.background = "none")}
                                 >
                                 <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#262c28", display: "inline-block" }} />
-                                    Deletar Pedido
+                                     Deletar Pedido
                                 </p>                                  
                             </div>
                         )}
-                    </td>
-                    ) : (
-                        <td></td>
-                    )}
+                    </td> ) : ( <td></td> )}
                 </tr>
-
-            ))}
+            )})}
             </tbody>
         </table>
-
+        </div>
     {isEditOpen && (
         <Modal 
         title="Editar Pedido"

@@ -7,6 +7,6 @@ export const STATUS_COLOR: Record<string, string> = {
 
 
 export const STATUS_STORAGE_COLOR: Record<string, string> = {
-  'Em Estoque': '#22c55e',
-  'Em Pedido': '#f59e0b',
+  "AVAILABLE": '#22c55e',
+  "ORDER": '#f59e0b',
 }
