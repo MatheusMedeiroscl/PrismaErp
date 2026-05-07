@@ -12,6 +12,7 @@ import { STATUS_STORAGE_COLOR } from "../shared/utils/Colors";
 import '../style/Stock.css'
 import '../style/index.css'
 import { KpiCard } from "../components/Kpi";
+import { TableLayout } from "../components/Table";
 interface Istock {
     id: number,
     name: string,
@@ -165,24 +166,26 @@ export function StockPage(){
         )}
 
         {/* TABELA DE ESTOQUE */}
-        <div className="table-card full-width">
-        <div className="table-card-header">
-            <h3 className="chart-title">Produtos</h3>
-            <FilterPopover
-              hasFilter={hasFilter}
-              onClear={() => setFilter(INITIAL_FILTER)}
-              fields={[
-                { label: 'Produto', placeholder: 'Nome do produto', value: filter.name, onChange: v => setFilter(f => ({ ...f, produto: v })) },
+        <TableLayout
+            title="Produtos"
+            filter = {
+                <FilterPopover
+                    hasFilter={hasFilter}
+                    onClear={() => setFilter(INITIAL_FILTER)}
+                    fields={[
+                        { label: 'Produto', placeholder: 'Nome do produto', value: filter.name, onChange: v => setFilter(f => ({ ...f, produto: v })) },
               ]} />
-          </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th> <th>Produto</th> <th>Quantidade</th> <th>Total</th> <th>Data</th> <th>status</th> <th>ações</th>
-                </tr>
-            </thead>
-            <tbody>
-            {filteredStocks.length === 0 
+            }
+        headers={<>
+            <th>ID</th>
+            <th>Produto</th>
+            <th>Quantidade</th>
+            <th>Total</th>
+            <th>Data</th>
+            <th>status</th>
+            <th>ações</th>
+        </>}>
+        {filteredStocks.length === 0 
             ? <tr><td colSpan={6} className="empty-row">Nenhum resultado encontrado</td></tr>
             : filteredStocks.map((stock, i) => {
                 const color = STATUS_STORAGE_COLOR[stock.type] || '#888'
@@ -232,9 +235,7 @@ export function StockPage(){
                     </td> ) : ( <td></td> )}
                 </tr>
             )})}
-            </tbody>
-        </table>
-        </div>
+        </TableLayout>
     {isEditOpen && (
         <Modal 
         title="Editar Pedido"
