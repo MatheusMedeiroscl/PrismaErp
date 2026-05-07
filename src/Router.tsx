@@ -4,6 +4,8 @@ import { Register } from './pages/Register'
 import { AppLayout } from './shared/layout/AppLayout'
 import { useAuth } from './shared/context/AuthContext'
 import { StockPage } from './pages/Stock'
+import { DashboardPage } from './pages/Dashboard'
+import { CatalogPage } from './pages/Catalog'
 
 export function Router() {
   const { isAuthenticated } = useAuth()
@@ -19,8 +21,10 @@ export function Router() {
   return (
     <AppLayout>
       <Routes>
-        <Route path='*' element={<Navigate to='/home' />} />
         <Route path='/estoque' element= {<StockPage/>}/>
+        <Route path='/dashboard' element= {<DashboardPage/>}/>
+         <Route path='/catalogo' element= {<CatalogPage/>}/>
+        <Route path='*' element= {<Navigate to='/dashboard'/> }/>
       </Routes>
     </AppLayout>
   )

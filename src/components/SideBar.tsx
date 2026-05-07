@@ -22,7 +22,7 @@ export function Sidebar() {
       <nav className="sidebar-nav">
         <p className="sidebar-section-label">Operações</p>
 
-        <NavLink to="/home" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+        <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
           Dashboard
         </NavLink>
 
