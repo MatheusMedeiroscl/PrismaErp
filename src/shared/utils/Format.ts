@@ -6,3 +6,11 @@ export const statusLabel: Record<string, string> = {
   AVAILABLE: "Estoque",
   ORDER: "Pedido",
 };
+
+export function currencyToNumber(value: string): number {
+    return parseFloat(
+        value
+            .replace(/\./g, "")
+            .replace(",", ".")
+    );
+}

@@ -37,7 +37,6 @@ export function StockPage(){
     const {token} = useAuth();
     const [refresh, setRefresh] = useState(false);
     const [stocks, setStocks] = useState<Istock[]>([]);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const { isOpen, open, close } = useModal();
     const { isOpen: isEditOpen, open: openEdit, close: closeEdit } = useModal(); 
     const [selectedStock, setSelectedStock] = useState<Istock | null>(null);
@@ -70,7 +69,7 @@ export function StockPage(){
 
     }
 
-    const handleUpdate = (stock: Istock, type: string) => {
+    const handleUpdate = (stock: Istock) => {
         let stockForUpdate = {
             id: stock.id,
             quantity: null,
@@ -140,7 +139,7 @@ export function StockPage(){
              }>
                 <label className="modal-label">Produto *</label>
                 <select className="modal-input" value={form.productId}
-                    onChange={e => setForm(f => ({...f, productId: Number(e.target.value)}))}>
+                    onChange={(e: { target: { value: any; }; }) => setForm(f => ({...f, productId: Number(e.target.value)}))}>
                     <option value={0}>Selecione um produto...</option>
                     {products.map(product => (
                         <option key={product.id} value={product.id}>{product.name}</option>
@@ -167,7 +166,7 @@ export function StockPage(){
 
         {/* TABELA DE ESTOQUE */}
         <TableLayout
-            title="Produtos"
+            title="Estoque"
             filter = {
                 <FilterPopover
                     hasFilter={hasFilter}
@@ -208,7 +207,7 @@ export function StockPage(){
                         <button onClick={(e) => handleDropdown(e, stock)} className="btn-icon"> ··· </button>
                         {dropdownPos  && (
                             <div  style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, zIndex: 1000 }}  className= "dropdownCard">
-                                <p className="dropdownBtn" onClick={() => handleUpdate(stock, "AVAILABLE")}
+                                <p className="dropdownBtn" onClick={() => handleUpdate(stock)}
                                     onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
                                     onMouseLeave={e => (e.currentTarget.style.background = "none")}
                                 >

@@ -39,10 +39,9 @@ export const ProductService = {
         return response.json();
 
     },
-   async create(product: IProduct, token: string | null){
-        console.log('token:', token)
+   async create( token: string | null, product: IProduct){
+        console.log('Produto:', product)
         const response = await fetch(`${URL}/products`, {
-            
         method: "POST",
         headers: {
             "Content-Type": "application/json",
