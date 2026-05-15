@@ -13,24 +13,13 @@ import '../style/Stock.css'
 import '../style/index.css'
 import { KpiCard } from "../components/Kpi";
 import { TableLayout } from "../components/Table";
-interface Istock {
-    id: number,
-    name: string,
-    Quantity: number,
-    costPrice: number,
-    type: string,
-    createAt: string
+import type { IProduct, Istock } from "../shared/utils/Models";
 
-}
-interface IProduct {
-    id: number;
-    name: string;
-    category: string;
-    costPrice: number;
-    salePrice: number;
-}
 
-const INITIAL_FORM = { productId: 0, quantity: '', status: 'IN' }
+
+
+const INITIAL_FORM = { productId: 0, quantity: '', type: '' }
+const INITIAL_STOCK = {name: '', id: 0, quantity: 0, status: ''}
 const INITIAL_FILTER = {name: ''}
 
 export function StockPage(){
@@ -39,29 +28,52 @@ export function StockPage(){
     const [stocks, setStocks] = useState<Istock[]>([]);
     const { isOpen, open, close } = useModal();
     const { isOpen: isEditOpen, open: openEdit, close: closeEdit } = useModal(); 
-    const [selectedStock, setSelectedStock] = useState<Istock | null>(null);
+    const [selectedStock, setSelectedStock] = useState(INITIAL_STOCK);
     const [form, setForm] = useState(INITIAL_FORM);
     const [products, setProducts] = useState<IProduct[]>([]);
     const [filter, setFilter] = useState(INITIAL_FILTER)
+    const [dropdownPos, setDropdownPos] = useState<{top: number, left: number, stock: Istock} | null>(null);
 
     useEffect(() => {
         StockService.getAll(token).then(r => setStocks(r))
         ProductService.getAll(token).then(p => setProducts(p))
     }, [refresh])
 
-    async function registryStock(){
-    if(!form.productId || !form.quantity)return 
+    async function createStock(){
+
         await StockService.create(token, {
             idProduct: Number(form.productId),
-            type: form.status,
+            type: form.type,
             quantity: Number(form.quantity)
         })
         close()
         setRefresh(!refresh);            
     }
 
-    const [dropdownPos, setDropdownPos] = useState<{top: number, left: number, stock: Istock} | null>(null);
+    async function updateStock(){
 
+        await StockService.updateStock(token, selectedStock.id, {
+            quantity: Number(selectedStock.quantity),
+            status: selectedStock?.status
+        })
+
+        closeEdit();
+        setRefresh(!refresh);   
+    }
+
+    async function receivedStock(id:number) {
+        await StockService.updateStock(token, id, {
+            quantity: null,
+            status: "AVAILABLE"
+        });
+        setRefresh(!refresh);  
+    }
+
+    async function delelteStock(id:number) {
+        await StockService.delete(token, id)
+        setRefresh(!refresh);    
+
+    }
     const handleDropdown = (e: React.MouseEvent<HTMLButtonElement>, stock: Istock) => {
         if(dropdownPos) return setDropdownPos(null); // fecha se já está aberto
         const rect = e.currentTarget.getBoundingClientRect();
@@ -69,38 +81,8 @@ export function StockPage(){
 
     }
 
-    const handleUpdate = (stock: Istock) => {
-        let stockForUpdate = {
-            id: stock.id,
-            quantity: null,
-            type: "AVAILABLE"
-        }
-         StockService.updateStock(token, stockForUpdate)
-        setRefresh(!refresh);
-    }
 
-    const handleEditModal = (stock: Istock) => {
-        setSelectedStock(stock)
-        openEdit()
-        
-    }
 
-    async function updateStock(){
-        await StockService.updateStock(token, {
-                id: Number(selectedStock?.id),
-                type: selectedStock?.type,
-                quantity: Number(selectedStock?.Quantity)
-         })
-
-        closeEdit()
-        setRefresh(!refresh);  
-    }
-
-    async function handleDelete(id:number) {
-        await StockService.delete(token, id)
-        setRefresh(!refresh);    
-
-    }
     const filteredStocks = stocks.filter(s => {
         const matchProduto = !filter.name || s.name.toLowerCase().includes(filter.name.toLowerCase())
         return matchProduto
@@ -108,9 +90,9 @@ export function StockPage(){
   const hasFilter = !!(filter.name)
 
   const kpis = [
-    {label: 'Total de Produtos', value: stocks.reduce((acc, s) => acc + s.Quantity, 0)},
-    {label: 'Valor Total em Estoque', value: formatCurrency(stocks.reduce((acc, s) => acc + (s.costPrice * s.Quantity), 0))},
-    {label: 'Produtos em Pedido', value: stocks.filter(s => s.type === 'ORDER').reduce((acc, s) => acc + s.Quantity, 0)},
+    {label: 'Total de Produtos', value: stocks.reduce((acc, s) => acc + s.quantity, 0)},
+    {label: 'Valor Total em Estoque', value: formatCurrency(stocks.reduce((acc, s) => acc + (s.costPrice * s.quantity), 0))},
+    {label: 'Produtos em Pedido', value: stocks.filter(s => s.status === 'ORDER').reduce((acc, s) => acc + s.quantity, 0)},
 
   ]
 
@@ -129,42 +111,6 @@ export function StockPage(){
           ))}
         </div>
     </div>
-        {isOpen && (
-            <Modal title="Novo Registro" onClose={close}
-             footer= {
-                <div>
-                    <button className="btn-secondary" onClick={close}>Cancelar</button>
-                    <button className="btn-primary" onClick={registryStock}>Salvar</button>
-                </div>
-             }>
-                <label className="modal-label">Produto *</label>
-                <select className="modal-input" value={form.productId}
-                    onChange={(e: { target: { value: any; }; }) => setForm(f => ({...f, productId: Number(e.target.value)}))}>
-                    <option value={0}>Selecione um produto...</option>
-                    {products.map(product => (
-                        <option key={product.id} value={product.id}>{product.name}</option>
-                    ))}
-                </select>
-
-                <div className="modal-row">
-                    <div className="modal-field">
-                        <label className="modal-label">Quantidade *</label>
-                        <input className="modal-input" type="number" placeholder="0" value={form.quantity}
-                        onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} />
-                    </div>
-                    <div>
-                    <label className="modal-label">Tipo</label>
-                        <select className="modal-input" value={form.status}
-                            onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
-                            <option value="IN">Entrada</option>
-                            <option value="ORDER">Pedido</option>
-                        </select>
-                    </div>
-                </div>
-            </Modal>
-        )}
-
-        {/* TABELA DE ESTOQUE */}
         <TableLayout
             title="Estoque"
             filter = {
@@ -187,34 +133,41 @@ export function StockPage(){
         {filteredStocks.length === 0 
             ? <tr><td colSpan={6} className="empty-row">Nenhum resultado encontrado</td></tr>
             : filteredStocks.map((stock, i) => {
-                const color = STATUS_STORAGE_COLOR[stock.type] || '#888'
+                const color = STATUS_STORAGE_COLOR[stock.status] || '#888'
 
                 return (
                 
                 <tr key={i}>
                     <td>{stock.id}</td>
                     <td>{stock.name}</td>
-                    <td>{stock.Quantity}</td>
-                    <td>{formatCurrency(stock.costPrice * stock.Quantity)}</td>
+                    <td>{stock.quantity}</td>
+                    <td>{formatCurrency(stock.costPrice * stock.quantity)}</td>
                     <td>{new Date(stock.createAt).toLocaleDateString("pt-BR")}</td>
                     <td>
                         <span className="status-badge" style={{ background: color + '22', color }}>
-                          {statusLabel[stock.type]}
+                          {statusLabel[stock.status]}
                         </span>
                     </td>
-                    {stock.type === "ORDER" ? (
+                    {stock.status === "ORDER" ? (
                     <td style={{ position: "relative" }}>
                         <button onClick={(e) => handleDropdown(e, stock)} className="btn-icon"> ··· </button>
                         {dropdownPos  && (
                             <div  style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, zIndex: 1000 }}  className= "dropdownCard">
-                                <p className="dropdownBtn" onClick={() => handleUpdate(stock)}
+                                <p className="dropdownBtn"
+                                    onClick={() => {
+                                        receivedStock(stock.id)
+                                    }}
                                     onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
                                     onMouseLeave={e => (e.currentTarget.style.background = "none")}
                                 >
                                 <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
                                      Recebido
                                 </p>
-                                <p className="dropdownBtn" onClick={() => handleEditModal(stock)}
+                                <p className="dropdownBtn"
+                                    onClick={() => {
+                                        setSelectedStock({name: stock.name, id: stock.id, quantity: stock.quantity, status: stock.status });
+                                        openEdit();
+                                    }}
                                     onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
                                     onMouseLeave={e => (e.currentTarget.style.background = "none")}
                                 >
@@ -222,7 +175,7 @@ export function StockPage(){
                                      Editar Pedido
                                 </p>   
 
-                                <p className="dropdownBtn" onClick={() => handleDelete(stock.id)}
+                                <p className="dropdownBtn" onClick={() => delelteStock(stock.id)}
                                     onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
                                     onMouseLeave={e => (e.currentTarget.style.background = "none")}
                                 >
@@ -235,6 +188,41 @@ export function StockPage(){
                 </tr>
             )})}
         </TableLayout>
+    {isOpen && (
+        <Modal title="Novo Registro" onClose={close}
+            footer= {
+            <div>
+                <button className="btn-secondary" onClick={close}>Cancelar</button>
+                <button className="btn-primary" onClick={createStock}>Salvar</button>
+            </div>
+         }>
+
+            <label className="modal-label">Produto</label>
+            <select className="modal-input" value={form.productId}
+                onChange={(e: { target: { value: any; }; }) => setForm(f => ({...f, productId: Number(e.target.value)}))}>
+                <option value={0}>Selecione um produto...</option>
+                {products.map(product => (
+                    <option key={product.id} value={product.id}>{product.name}</option>
+                ))}
+            </select>
+
+            <div className="modal-row">
+                <div className="modal-field">
+                    <label className="modal-label">Quantidade *</label>
+                    <input className="modal-input" type="number" placeholder="0" value={form.quantity}
+                    onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} />
+                </div>
+                <div>
+                <label className="modal-label">Tipo</label>
+                    <select className="modal-input" value={form.type}
+                        onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
+                        <option value="IN">Entrada</option>
+                        <option value="ORDER">Pedido</option>
+                    </select>
+                </div>
+            </div>
+        </Modal>
+    )}
     {isEditOpen && (
         <Modal 
         title="Editar Pedido"
@@ -242,21 +230,21 @@ export function StockPage(){
         footer= {
                 <div>
                     <button className="btn-secondary" onClick={close}>Cancelar</button>
-                    <button className="btn-primary" onClick={updateStock}>Salvar</button>
+                    <button className="btn-primary" onClick={updateStock} >Salvar</button>
                 </div>}
         >
         <h3>Produto: {selectedStock?.name}</h3>
 
         <div className="modal-row">
             <div className="modal-field">
-                <label className="modal-label">Quantidade *</label>
-                <input className="modal-input" type="number" placeholder="0" value={selectedStock?.Quantity}
-                        onChange={e => setSelectedStock(f => f ? ({ ...f, Quantity: Number(e.target.value) }) : null)}/>
+                <label className="modal-label">Quantidade</label>
+                <input className="modal-input" type="number" placeholder="0" value={selectedStock?.quantity}
+                        onChange={e => setSelectedStock(f => ({ ...f, quantity: Number(e.target.value) }))}/>
             </div>
             <div>
                 <label className="modal-label">Tipo</label>
-                    <select className="modal-input" value={selectedStock?.type}
-                        onChange={e => setSelectedStock(f => f ? ({ ...f, status: e.target.value }) : null)}>
+                    <select className="modal-input" value={selectedStock?.status}
+                        onChange={e => setSelectedStock(f =>({ ...f, status: e.target.value }))}>
                         <option value="AVAILABLE">Entrada</option>
                         <option value="ORDER">Pedido</option>
                     </select>
@@ -265,6 +253,7 @@ export function StockPage(){
         </Modal>
 
     )}
+
     </PageLayout>
     
 

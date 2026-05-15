@@ -2,8 +2,7 @@
 const URL = 'http://localhost:8080'
 
 interface Iupdate {
-    id: number
-    type: string | undefined;
+    status: string | undefined;
     quantity: number | null;
 }
 
@@ -13,6 +12,7 @@ interface ICreate {
     quantity: number| null;
 }
 export const StockService = {
+
     async getAll(token: string | null){
         const response = await fetch(`${URL}/stock`, {
         method: "GET",
@@ -28,8 +28,9 @@ export const StockService = {
 
         return response.json();
     },
-    async updateStock(token: string | null, updateStock: Iupdate){
-        const response = await fetch(`${URL}/stock/${updateStock.id}`, {
+
+    async updateStock(token: string | null,id: number, updateStock: Iupdate){
+        const response = await fetch(`${URL}/stock/${id}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -44,7 +45,8 @@ export const StockService = {
 
         return response.json();
     },
-        async create(token: string | null, createStock: ICreate){
+
+    async create(token: string | null, createStock: ICreate){
         const response = await fetch(`${URL}/movement`, {
         method: "POST",
         headers: {
