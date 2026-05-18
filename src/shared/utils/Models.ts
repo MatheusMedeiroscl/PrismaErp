@@ -1,6 +1,7 @@
  export interface Istock {
     id: number,
-    name: string,
+    product: string,
+    category: string
     quantity: number,
     costPrice: number,
     status: string,

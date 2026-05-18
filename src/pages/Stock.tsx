@@ -19,8 +19,8 @@ import type { IProduct, Istock } from "../shared/utils/Models";
 
 
 const INITIAL_FORM = { productId: 0, quantity: '', type: '' }
-const INITIAL_STOCK = {name: '', id: 0, quantity: 0, status: ''}
-const INITIAL_FILTER = {name: ''}
+const INITIAL_STOCK = {product: '', id: 0, quantity: 0, status: ''}
+const INITIAL_FILTER = {product: '', category: ''}
 
 export function StockPage(){
     const {token} = useAuth();
@@ -84,10 +84,11 @@ export function StockPage(){
 
 
     const filteredStocks = stocks.filter(s => {
-        const matchProduto = !filter.name || s.name.toLowerCase().includes(filter.name.toLowerCase())
-        return matchProduto
+        const matchProduct = !filter.product || s.product.toLowerCase().includes(filter.product.toLowerCase())
+        const matchCategory = !filter.category || s.product.toLowerCase().includes(filter.category.toLowerCase())
+        return matchProduct || matchCategory
     })
-  const hasFilter = !!(filter.name)
+  const hasFilter = !!(filter.product || filter.category)
 
   const kpis = [
     {label: 'Total de Produtos', value: stocks.reduce((acc, s) => acc + s.quantity, 0)},
@@ -118,12 +119,14 @@ export function StockPage(){
                     hasFilter={hasFilter}
                     onClear={() => setFilter(INITIAL_FILTER)}
                     fields={[
-                        { label: 'Produto', placeholder: 'Nome do produto', value: filter.name, onChange: v => setFilter(f => ({ ...f, produto: v })) },
+                        { label: 'Produto', placeholder: 'Nome do produto', value: filter.product, onChange: v => setFilter(f => ({ ...f, produto: v })) },
+                        { label: 'Categoria', placeholder: 'Categoria do produto', value: filter.category, onChange: v => setFilter(f => ({ ...f, category: v })) },
               ]} />
             }
         headers={<>
             <th>ID</th>
             <th>Produto</th>
+            <th>Categoria</th>
             <th>Quantidade</th>
             <th>Total</th>
             <th>Data</th>
@@ -139,7 +142,8 @@ export function StockPage(){
                 
                 <tr key={i}>
                     <td>{stock.id}</td>
-                    <td>{stock.name}</td>
+                    <td>{stock.product}</td>
+                    <td>{stock.category}</td>
                     <td>{stock.quantity}</td>
                     <td>{formatCurrency(stock.costPrice * stock.quantity)}</td>
                     <td>{new Date(stock.createAt).toLocaleDateString("pt-BR")}</td>
@@ -165,7 +169,7 @@ export function StockPage(){
                                 </p>
                                 <p className="dropdownBtn"
                                     onClick={() => {
-                                        setSelectedStock({name: stock.name, id: stock.id, quantity: stock.quantity, status: stock.status });
+                                        setSelectedStock({product: stock.product, id: stock.id, quantity: stock.quantity, status: stock.status });
                                         openEdit();
                                     }}
                                     onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
@@ -233,7 +237,7 @@ export function StockPage(){
                     <button className="btn-primary" onClick={updateStock} >Salvar</button>
                 </div>}
         >
-        <h3>Produto: {selectedStock?.name}</h3>
+        <h3>Produto: {selectedStock?.product} </h3>
 
         <div className="modal-row">
             <div className="modal-field">

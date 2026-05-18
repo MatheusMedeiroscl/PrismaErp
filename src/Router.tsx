@@ -8,12 +8,17 @@ import { DashboardPage } from './pages/Dashboard'
 import { CatalogPage } from './pages/Catalog'
 
 export function Router() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
+
+  if (isLoading) {
+    return <div>Carregando...</div> // ou um Spinner
+  }
 
   if (!isAuthenticated) {
     return (
       <Routes>
-        <Route path='*' element={<Register />} />
+        <Route path='/registro' element={<Register />} />
+        <Route path='*' element={<Navigate to='/registro' replace />} />
       </Routes>
     )
   }
@@ -21,10 +26,10 @@ export function Router() {
   return (
     <AppLayout>
       <Routes>
-        <Route path='/estoque' element= {<StockPage/>}/>
-        <Route path='/dashboard' element= {<DashboardPage/>}/>
-         <Route path='/catalogo' element= {<CatalogPage/>}/>
-        <Route path='*' element= {<Navigate to='/dashboard'/> }/>
+        <Route path='/estoque' element={<StockPage />} />
+        <Route path='/dashboard' element={<DashboardPage />} />
+        <Route path='/catalogo' element={<CatalogPage />} />
+        <Route path='*' element={<Navigate to='/dashboard' />} />
       </Routes>
     </AppLayout>
   )
