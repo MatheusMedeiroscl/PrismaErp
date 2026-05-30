@@ -47,6 +47,8 @@ export const StockService = {
     },
 
     async create(token: string | null, createStock: ICreate){
+        console.log(createStock.idProduct, createStock.quantity, createStock.type);
+        
         const response = await fetch(`${URL}/movement`, {
         method: "POST",
         headers: {
@@ -57,7 +59,13 @@ export const StockService = {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorBody = await response.text();
+
+            console.error(errorBody);
+
+            throw new Error(
+                `HTTP error! status: ${response.status}`
+            );
         }
 
         return response.json();

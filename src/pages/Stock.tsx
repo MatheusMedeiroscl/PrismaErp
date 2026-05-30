@@ -18,7 +18,7 @@ import type { IProduct, Istock } from "../shared/utils/Models";
 
 
 
-const INITIAL_FORM = { productId: 0, quantity: '', type: '' }
+const INITIAL_FORM = { productId: 0, quantity: '', type: 'IN' }
 const INITIAL_STOCK = {product: '', id: 0, quantity: 0, status: ''}
 const INITIAL_FILTER = {product: '', category: ''}
 
@@ -40,12 +40,13 @@ export function StockPage(){
     }, [refresh])
 
     async function createStock(){
-
+        console.log("FORM:", form);
         await StockService.create(token, {
             idProduct: Number(form.productId),
             type: form.type,
             quantity: Number(form.quantity)
         })
+        setForm(INITIAL_FORM)
         close()
         setRefresh(!refresh);            
     }
