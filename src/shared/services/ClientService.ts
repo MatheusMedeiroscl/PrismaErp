@@ -2,7 +2,8 @@ const URL = 'http://localhost:8080'
 
 interface IClient {
     storeName: string,
-    owner: string
+    owner: string,
+    email: string,
     cnpj: string,
     address: string
 }

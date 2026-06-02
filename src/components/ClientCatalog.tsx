@@ -4,12 +4,14 @@ import '../style/catalog.css'
 import { ClientService } from "../shared/services/ClientService";
 import { useAuth } from "../shared/context/AuthContext";
 import { FilterPopover } from "./Filter";
+import { formatCnpj } from "../shared/utils/Format";
 
 
 interface IClient {
     id: number;
     storeName: string;
     owner: string;
+    email: string
     cnpj: string;
     address: string;
 }
@@ -53,7 +55,7 @@ export function ClientCatalog(){
                 }
     
                 headers={<>
-                <th>ID</th><th>Loja</th><th>Responsável</th><th>CNPJ</th><th>Endereço</th>
+                <th>ID</th><th>Loja</th><th>Responsável</th><th>email</th><th>CNPJ</th><th>Endereço</th>
                 </>}
                 >
 
@@ -65,7 +67,8 @@ export function ClientCatalog(){
                                     <td>{client.id}</td>
                                     <td>{client.storeName}</td>
                                     <td>{client.owner}</td>
-                                    <td>{client.cnpj}</td>
+                                    <td>{client.email}</td>
+                                    <td>{formatCnpj(client.cnpj)}</td>
                                     <td>{client.address}</td>
                                 </tr>
                             )
