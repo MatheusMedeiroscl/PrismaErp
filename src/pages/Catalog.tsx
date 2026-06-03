@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PageLayout } from "../shared/layout/PageLayout";
 import { ProductCatalog } from "../components/ProductCatalog";
 import { ClientCatalog } from "../components/ClientCatalog";

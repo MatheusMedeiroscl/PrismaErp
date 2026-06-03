@@ -25,3 +25,8 @@ export function formatCnpj(value: string): string {
         .replace(/(\d{4})(\d)/, "$1-$2")
         .slice(0, 18);
 }
+
+export function fmtDate(s: string) {
+    return s ? s.slice(0, 10).split("-").reverse().join("/") : "-";
+}
+

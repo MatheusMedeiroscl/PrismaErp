@@ -6,6 +6,7 @@ import { useAuth } from './shared/context/AuthContext'
 import { StockPage } from './pages/Stock'
 import { DashboardPage } from './pages/Dashboard'
 import { CatalogPage } from './pages/Catalog'
+import { SalePage } from './pages/Sale'
 
 export function Router() {
   const { isAuthenticated, isLoading } = useAuth()
@@ -29,6 +30,7 @@ export function Router() {
         <Route path='/estoque' element={<StockPage />} />
         <Route path='/dashboard' element={<DashboardPage />} />
         <Route path='/catalogo' element={<CatalogPage />} />
+        <Route path='/vendas' element={<SalePage />} />
         <Route path='*' element={<Navigate to='/dashboard' />} />
       </Routes>
     </AppLayout>

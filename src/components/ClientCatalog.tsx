@@ -20,7 +20,7 @@ interface IClient {
 export function ClientCatalog(){
     const {token} = useAuth();
     const [clients, setClients] = useState<IClient[]>([]);
-    const [refresh, setRefresh] = useState(false);
+    const [refresh] = useState(false);
     const [filter, setFilter] = useState(INITIAL_FILTER);
 
 
