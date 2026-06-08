@@ -40,6 +40,8 @@ const Pages = [
     };
 
 
+    
+
 export function CatalogPage() {
     const {token} = useAuth();
     const [refresh, setRefresh] = useState(0);
@@ -49,7 +51,6 @@ export function CatalogPage() {
     const Component = page.component;
 
     const [productForm, setProductForm] = useState(INITIAL_PRODUCT_FORM);
-
     const [clientForm, setClientForm] = useState(INITIAL_CLIENT_FORM);
 
     async function handleSave() {
@@ -80,32 +81,46 @@ export function CatalogPage() {
             close()
     }
 
+    const toggleButton = (
+        <div  className ="toggleArea">
+        <button
+                onClick={() => setPageIndex(0)}
+                className="toggleBtn"
+                style={{
+                    background: pageIndex === 0 ? "#f0f0f0" : "transparent",
+                    fontWeight: pageIndex === 0 ? 500 : 400
+                }}
+            >
+                Produtos
+            </button>
+            <button
+                onClick={() => setPageIndex(1)}
+                className="toggleBtn"
+                style={{
+                     background: pageIndex === 1 ? "#f0f0f0" : "transparent",
+                    fontWeight: pageIndex === 1 ? 500 : 400
+                }}
+            >
+                Clientes
+            </button>
+        </div>
+    );
+
     return (
-    <PageLayout
-        title= {page.title}
+    <PageLayout title= {page.title}
         actions= {<>
             <button  className="btn-primary" onClick={open}> + {page.id} </button>
         </>}
     >
-    <section>
-        <button
-            className={pageIndex === 0 ? "btn-primary" : "btn-secondary"}
-            onClick={() => setPageIndex(0)}
-        >
-            Produtos
-        </button>
 
-        <button
-            className={pageIndex === 1 ? "btn-primary" : "btn-secondary"}
-            onClick={() => setPageIndex(1)}
-        >
-            Clientes
-        </button>
-    </section>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+        {toggleButton}
+        </div>
+    
 
         <Component key={refresh}/>
 
-{isOpen && (
+    {isOpen && (
     <Modal
         onClose={close}
         title={page.title}

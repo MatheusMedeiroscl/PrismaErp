@@ -9,6 +9,7 @@ import './styles/Modal.css'
     children: ReactNode,
     footer?: ReactNode
   }
+
 export function Modal({ title, onClose, children, footer }: IModalProps) {
   return createPortal(
     <div className="modal-overlay" onClick={onClose}>  {/* ← overlay correto */}

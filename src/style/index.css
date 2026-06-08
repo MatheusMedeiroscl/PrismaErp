@@ -122,3 +122,42 @@
   font-size: 14px;
   color: #6b7280;
 }
+
+
+.toggleArea {
+    display: flex;
+    gap: 0;
+    border: 0.5px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.toggleBtn {
+    padding: 6px 16px;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    transition: background 150ms ease, font-weight 150ms ease;
+}
+
+.toggleBtn:hover {
+    background: #e5e5e5;
+}
+
+css.toggleArea .btn-primary,
+.toggleArea .btn-secondary {
+    margin: 0;
+    border-radius: 0;
+    border-right: none;
+}
+
+.toggleArea .btn-primary:first-child,
+.toggleArea .btn-secondary:first-child {
+    border-radius: 6px 0 0 6px;
+}
+
+.toggleArea .btn-primary:last-child,
+.toggleArea .btn-secondary:last-child {
+    border-radius: 0 6px 6px 0;
+    border-right: 1px solid #d1d5db;
+}

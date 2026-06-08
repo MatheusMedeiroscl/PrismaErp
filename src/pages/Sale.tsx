@@ -44,28 +44,22 @@ export function SalePage(){
 
         // Botão de toggle de visão — vai no header da TableLayout via prop se ela aceitar, senão fica acima
     const toggleButton = (
-        <div style={{ display: "flex", gap: 0, border: "0.5px solid #ccc", borderRadius: 8, overflow: "hidden" }}>
+        <div  className ="toggleArea">
             <button
                 onClick={() => setView("client")}
+                className="toggleBtn"
                 style={{
-                    padding: "6px 16px",
-                    fontSize: 13,
                     background: view === "client" ? "#f0f0f0" : "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    fontWeight: view === "client" ? 500 : 400,
+                    fontWeight: view === "client" ? 500 : 400
                 }}
             >
                 Por cliente
             </button>
             <button
                 onClick={() => setView("product")}
+                className="toggleBtn"
                 style={{
-                    padding: "6px 16px",
-                    fontSize: 13,
                     background: view === "product" ? "#f0f0f0" : "transparent",
-                    border: "none",
-                    cursor: "pointer",
                     fontWeight: view === "product" ? 500 : 400,
                 }}
             >
