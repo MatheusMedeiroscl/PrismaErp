@@ -5,8 +5,19 @@ export function formatCurrency(v: number) {
 export const statusLabel: Record<string, string> = {
   AVAILABLE: "Estoque",
   ORDER: "Pedido",
+  PENDING: "a Receber",
+  PAID: "Recebido",
+  RESERVED: "Pedido",
+  CANCELLED: "Cancelado"
+
 };
 
+
+export const PaymentStatus: Record<string, string> = {
+    PIX: "Pix",
+    CASH: "Dinheiro",
+    BANK_SLIP: "Boleto"
+}
 export function currencyToNumber(value: string): number {
     return parseFloat(
         value
