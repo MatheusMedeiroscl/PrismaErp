@@ -7,15 +7,9 @@ import { FilterPopover } from "./Filter";
 import { formatCnpj } from "../shared/utils/Format";
 import { useModal } from "../shared/hooks/Modal";
 import { Modal } from "./Modal";
+import type { IClient } from "../shared/utils/Models";
 
-interface IClient {
-  id: number;
-  storeName: string;
-  owner: string;
-  email: string;
-  cnpj: string;
-  address: string;
-}
+
 
 const INITIAL_FILTER = { storeName: "", owner: "", cnpj: "" };
 const INITIAL_CLIENT = {

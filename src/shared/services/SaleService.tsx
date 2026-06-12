@@ -10,7 +10,7 @@ interface sale {
     clientID: number,
     status: string,
     method: string,
-    dueDate: Date,
+    dueDate: string,
     items: Array<saleItem>
 }
 
@@ -30,5 +30,27 @@ export const SaleService = {
 
         return response.json();
     },
+    async create (token: string | null, sale: sale){
+        const response = await fetch(`${URL}/movement`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(sale)
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.text();
+
+            console.error(errorBody);
+
+            throw new Error(
+                `HTTP error! status: ${response.status}`
+            );
+        }
+
+        return response.json();
+    }
     
 }

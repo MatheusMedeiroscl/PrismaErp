@@ -161,3 +161,9 @@ css.toggleArea .btn-primary,
     border-radius: 0 6px 6px 0;
     border-right: 1px solid #d1d5db;
 }
+
+.input:focus {
+  border-color: #000000;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}

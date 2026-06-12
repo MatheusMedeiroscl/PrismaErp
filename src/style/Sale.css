@@ -1,0 +1,23 @@
+.totalSale {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btnRemove {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  line-height: 1px;
+}
+
+.headerTable{
+    font-size: 11px;
+    color: #6b7280;
+}

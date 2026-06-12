@@ -8,14 +8,8 @@ import { Modal } from "../components/Modal";
 
 import "../style/catalog.css";
 import CurrencyInput from "react-currency-input-field";
+import type { IProduct } from "../shared/utils/Models";
 
-interface IProduct {
-  id: number;
-  name: string;
-  category: string;
-  costPrice: number;
-  salePrice: number;
-}
 
 const INITIAL_FILTER = { name: "", category: "" };
 const INITIAL_PRODUCT = {

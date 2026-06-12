@@ -47,7 +47,6 @@ export const StockService = {
     },
 
     async create(token: string | null, createStock: ICreate){
-        console.log(createStock.idProduct, createStock.quantity, createStock.type);
         
         const response = await fetch(`${URL}/movement`, {
         method: "POST",
