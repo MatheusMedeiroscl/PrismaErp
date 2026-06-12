@@ -2,13 +2,19 @@ import { pool } from './db.js'
 
 async function migrate() {
   await pool.query(`
+    DROP TABLE IF EXISTS sale_items CASCADE;
+    DROP TABLE IF EXISTS sales CASCADE;
+    DROP TABLE IF EXISTS products CASCADE;
+    DROP TABLE IF EXISTS catalog_items CASCADE;
+    DROP TABLE IF EXISTS clients CASCADE;
+    DROP TABLE IF EXISTS users CASCADE;
+
     CREATE TABLE IF NOT EXISTS users (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name TEXT NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL
     );
-
     CREATE TABLE IF NOT EXISTS sales (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       status TEXT NOT NULL DEFAULT 'A Receber',
@@ -18,7 +24,6 @@ async function migrate() {
       seller TEXT,
       date DATE NOT NULL
     );
-
     CREATE TABLE IF NOT EXISTS sale_items (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       sale_id UUID NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
@@ -26,7 +31,6 @@ async function migrate() {
       quantity INTEGER NOT NULL,
       unit_price NUMERIC NOT NULL
     );
-
     CREATE TABLE IF NOT EXISTS products (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name TEXT NOT NULL,
@@ -35,13 +39,11 @@ async function migrate() {
       price NUMERIC NOT NULL DEFAULT 0,
       status TEXT NOT NULL DEFAULT 'Em Estoque'
     );
-
     CREATE TABLE IF NOT EXISTS catalog_items (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name TEXT NOT NULL,
       category TEXT
     );
-
     CREATE TABLE IF NOT EXISTS clients (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       establishment TEXT NOT NULL,
@@ -52,8 +54,7 @@ async function migrate() {
     VALUES ('Admin', 'admin@prisma.com', '123456')
     ON CONFLICT (email) DO NOTHING;
   `)
-
-  console.log('Tabelas criadas com sucesso!')
+  console.log('Tabelas recriadas com sucesso!')
   await pool.end()
 }
 
