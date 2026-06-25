@@ -117,16 +117,7 @@ export function ClientCatalog() {
           />
         }
         headers={
-          <>
-            <th>ID</th>
-            <th>Loja</th>
-            <th>Responsável</th>
-            <th>email</th>
-            <th>CNPJ</th>
-            <th>Endereço</th>
-            <th>Ações</th>
-          </>
-        }
+          <><th>ID</th><th>Loja</th><th>Responsável</th><th>email</th><th>CNPJ</th><th>Endereço</th><th>Ações</th></>}
       >
         {filterClient.length === 0 ? (
           <tr>

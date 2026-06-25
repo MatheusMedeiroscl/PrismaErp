@@ -31,7 +31,7 @@ export const SaleService = {
         return response.json();
     },
     async create (token: string | null, sale: sale){
-        const response = await fetch(`${URL}/movement`, {
+        const response = await fetch(`${URL}/sale`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

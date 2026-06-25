@@ -20,13 +20,9 @@ export function TableLayout ({title, filter, children, headers}: ITable) {
             </div>
             <table>
                 <thead>
-                    <tr>
-                        {headers}
-                    </tr>
+                    <tr>{headers}</tr>
                 </thead>
-                <tbody>
-                        {children}
-                </tbody>
+                <tbody>{children}</tbody>
             </table>
         </div>
     

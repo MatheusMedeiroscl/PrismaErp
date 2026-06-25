@@ -42,7 +42,7 @@ export function StockPage(){
     async function createStock(){
         console.log("FORM:", form);
         await StockService.create(token, {
-            idProduct: Number(form.productId),
+            productId: Number(form.productId),
             type: form.type,
             quantity: Number(form.quantity)
         })
@@ -124,16 +124,8 @@ export function StockPage(){
                         { label: 'Categoria', placeholder: 'Categoria do produto', value: filter.category, onChange: v => setFilter(f => ({ ...f, category: v })) },
               ]} />
             }
-        headers={<>
-            <th>ID</th>
-            <th>Produto</th>
-            <th>Categoria</th>
-            <th>Quantidade</th>
-            <th>Total</th>
-            <th>Data</th>
-            <th>status</th>
-            <th>ações</th>
-        </>}>
+        headers={<><th>ID</th><th>Produto</th><th>Categoria</th><th>Quantidade</th><th>Total</th><th>Data</th><th>status</th><th>ações</th></>}
+        >
         {filteredStocks.length === 0 
             ? <tr><td colSpan={6} className="empty-row">Nenhum resultado encontrado</td></tr>
             : filteredStocks.map((stock, i) => {
@@ -153,7 +145,6 @@ export function StockPage(){
                           {statusLabel[stock.status]}
                         </span>
                     </td>
-                    {stock.status === "ORDER" ? (
                     <td style={{ position: "relative" }}>
                         <button onClick={(e) => handleDropdown(e, stock)} className="btn-icon"> ··· </button>
                         {dropdownPos  && (
@@ -189,7 +180,7 @@ export function StockPage(){
                                 </p>                                  
                             </div>
                         )}
-                    </td> ) : ( <td></td> )}
+                    </td>
                 </tr>
             )})}
         </TableLayout>

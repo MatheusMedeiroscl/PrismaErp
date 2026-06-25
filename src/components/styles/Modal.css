@@ -2,32 +2,33 @@
 
 /* Overlay */
 .modal-overlay {
-  position: fixed;    /* ← tem que ser fixed, não absolute ou relative */
-  inset: 0;           /* ← equivale a top/right/bottom/left: 0 */
+  position: fixed;
+  inset: 0;
   background: rgba(0, 0, 0, 0.45);
   display: flex;
-  align-items: center;     /* ← centraliza verticalmente */
-  justify-content: center; /* ← centraliza horizontalmente */
+  align-items: center;
+  justify-content: center;
   z-index: 1000;
 }
 
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 /* Modal box */
 .modal {
   background: #fff;
   border-radius: 12px;
-  width: 100%;
-  max-width: 480px;
-  max-height: 90vh;      /* ← era min-height, troca pra max-height */
+  width: fit-content;        /* ← expande conforme o conteúdo */
+  min-width: 480px;          /* ← garante um mínimo razoável */
+  max-width: 90vw;           /* ← nunca ultrapassa a tela */
+  max-height: 90vh;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   animation: slideUp 0.18s ease;
-  display: flex;             /* ← adiciona */
-  flex-direction: column;    /* ← adiciona */
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideUp {
@@ -70,7 +71,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow-y: auto;
+  overflow-y: auto;          /* ← scroll interno se passar de 90vh */
   flex: 1;
   min-height: 0;
 }
@@ -93,11 +94,12 @@
   background: #fff;
   outline: none;
   font-family: inherit;
+  box-sizing: border-box;    /* ← evita inputs vazarem o container */
 }
 
 .modal-input:focus {
   border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .modal-row {
@@ -121,4 +123,3 @@
   border-top: 1px solid #e5e7eb;
   flex-shrink: 0;
 }
-

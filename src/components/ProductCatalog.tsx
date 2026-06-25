@@ -101,15 +101,7 @@ export function ProductCatalog() {
           />
         }
         headers={
-          <>
-            <th>#</th>
-            <th>Produto</th>
-            <th>Categoria</th>
-            <th>Preço Custo</th>
-            <th>% Lucro</th>
-            <th>Ações</th>
-          </>
-        }
+          <><th>#</th><th>Produto</th><th>Categoria</th><th>Preço Custo</th><th>% Lucro</th><th>Ações</th></>}
       >
         {filterProducts.length === 0 ? (
           <tr>

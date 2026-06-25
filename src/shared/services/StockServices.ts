@@ -7,7 +7,7 @@ interface Iupdate {
 }
 
 interface ICreate {
-    idProduct: number | null;
+    productId: number | null;
     type: string;
     quantity: number| null;
 }

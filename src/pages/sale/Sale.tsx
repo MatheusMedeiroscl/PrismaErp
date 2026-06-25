@@ -1,28 +1,18 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../shared/context/AuthContext";
-import { SaleService } from "../shared/services/SaleService";
-import { PageLayout } from "../shared/layout/PageLayout";
-import { TableLayout } from "../components/Table";
-import {
-  fmtDate,
-  formatCurrency,
-  PaymentStatus,
-  statusLabel,
-} from "../shared/utils/Format";
-import { PAYMENT_COLOR, STATUS_COLOR } from "../shared/utils/Colors";
-import { useModal } from "../shared/hooks/Modal";
-import { Modal } from "../components/Modal";
-import {
-  type IClient,
-  type IProduct,
-  type ISale,
-  type ISaleItem,
-} from "../shared/utils/Models";
-import { ProductService } from "../shared/services/ProductService";
-import { ClientService } from "../shared/services/ClientService";
-import { SearchSelect } from "../components/SearchSelect";
 
-import "../style/Sale.css";
+import "../../style/Sale.css";
+import { useAuth } from "../../shared/context/AuthContext";
+import type { IClient, IProduct, ISale } from "../../shared/utils/Models";
+import { useModal } from "../../shared/hooks/Modal";
+import { SaleService } from "../../shared/services/SaleService";
+import { ProductService } from "../../shared/services/ProductService";
+import { ClientService } from "../../shared/services/ClientService";
+import { PageLayout } from "../../shared/layout/PageLayout";
+import { TableLayout } from "../../components/Table";
+import { PAYMENT_COLOR, STATUS_COLOR } from "../../shared/utils/Colors";
+import { fmtDate, formatCurrency, PaymentStatus, statusLabel } from "../../shared/utils/Format";
+import { Modal } from "../../components/Modal";
+import { SearchSelect } from "../../components/SearchSelect";
 
 const INITAL_FORM = {
   clientID: 0,
@@ -171,10 +161,7 @@ async function handleCreate() {
         <TableLayout
           title="Vendas"
           headers={
-            <>
-              <th>#</th> <th>Cliente</th> <th>Dt venda</th> <th>Status</th>{" "}
-              <th>Pagamento</th> <th>Qtd</th> <th>Total</th> <th>Vencimento</th>
-            </>
+            <><th>#</th><th>Cliente</th><th>Dt venda</th><th>Status</th><th>Pagamento</th><th>Qtd</th><th>Total</th><th>Vencimento</th></>
           }
         >
           {sales.map((sale) => {
@@ -186,17 +173,11 @@ async function handleCreate() {
                 <td>{sale.id}</td>
                 <td>{sale.client}</td>
                 <td>{fmtDate(sale.creatAt)}</td>
-                <td>
-                  <span
-                    className="status-badge"
-                    style={{ background: color + "22", color }}
-                  >
+                <td><span className="status-badge" style={{ background: color + "22", color }}>
                     {statusLabel[sale.saleStatus]}
-                  </span>
+                    </span>
                 </td>
-                <td>
-                  <span
-                    className="status-badge"
+                <td><span className="status-badge" 
                     style={{
                       background: paymentColor + "22",
                       color: paymentColor,
@@ -217,17 +198,7 @@ async function handleCreate() {
         <TableLayout
           title="Produtos Vendidos"
           headers={
-            <>
-              <th>#</th>
-              <th>Produto</th>
-              <th>Categoria</th>
-              <th>Dt Venda</th>
-              <th>Quantidade</th>
-              <th>R$ Unitário</th>
-              <th>R$ Total</th>
-              <th>Status</th>
-            </>
-          }
+            <><th>#</th><th>Produto</th><th>Categoria</th><th>Dt Venda</th><th>Quantidade</th><th>R$ Unitário</th><th>R$ Total</th><th>Status</th></>}
         >
           {productRows.map((row, i) => {
             const color = STATUS_COLOR[row.sale.saleStatus] || "#888";
