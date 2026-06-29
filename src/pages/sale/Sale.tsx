@@ -1,25 +1,28 @@
 import { useEffect, useState } from "react";
-
-import "../../style/Sale.css";
 import { useAuth } from "../../shared/context/AuthContext";
-import type { IClient, IProduct, ISale } from "../../shared/utils/Models";
-import { useModal } from "../../shared/hooks/Modal";
 import { SaleService } from "../../shared/services/SaleService";
+import { PageLayout } from "../../shared/layout/PageLayout";
+import { formatCurrency } from "../../shared/utils/Format";
+import { useModal } from "../../shared/hooks/Modal";
+import { Modal } from "../../components/Modal";
+import {
+  type IClient,
+  type IProduct,
+  type ISale,
+} from "../../shared/utils/Models";
 import { ProductService } from "../../shared/services/ProductService";
 import { ClientService } from "../../shared/services/ClientService";
-import { PageLayout } from "../../shared/layout/PageLayout";
-import { TableLayout } from "../../components/Table";
-import { PAYMENT_COLOR, STATUS_COLOR } from "../../shared/utils/Colors";
-import { fmtDate, formatCurrency, PaymentStatus, statusLabel } from "../../shared/utils/Format";
-import { Modal } from "../../components/Modal";
 import { SearchSelect } from "../../components/SearchSelect";
 
-const INITAL_FORM = {
+import "../../style/Sale.css";
+import { SaleTable } from "./SaleTable";
+
+const INITIAL_FORM = {
   clientID: 0,
   status: "PENDING",
   method: "PIX",
   dueDate: "",
-  items: [],
+  items: [] as never[],
 };
 
 interface IFormItem {
@@ -29,17 +32,14 @@ interface IFormItem {
   quantity: number;
 }
 
-type ViewMode = "client" | "product";
-
 export function SalePage() {
   const { token } = useAuth();
   const [sales, setSales] = useState<ISale[]>([]);
   const [products, setProducts] = useState<IProduct[]>([]);
   const [clients, setClients] = useState<IClient[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
-  const [form, setForm] = useState(INITAL_FORM);
+  const [form, setForm] = useState(INITIAL_FORM);
   const { open, close, isOpen } = useModal();
-  const [view, setView] = useState<ViewMode>("client");
   const [formItems, setFormItems] = useState<IFormItem[]>([]);
 
   useEffect(() => {
@@ -48,33 +48,33 @@ export function SalePage() {
     ClientService.getAll(token).then((c) => setClients(c));
   }, [token]);
 
-async function handleCreate() {
-  if (!selectedClientId) return;
-  if (formItems.length === 0) return;
+  async function handleCreate() {
+    if (!selectedClientId) return;
+    if (formItems.length === 0) return;
 
-  const payload: {
-    clientID: number,
-    status: string,
-    method: string,
-    dueDate: string,
-    items: Array<{ productId: number, quantity: number, salePrice: number }>
-  } = {
-    clientID: selectedClientId,
-    status: form.status,
-    method: form.method,
-    dueDate: form.dueDate,
-    items: formItems.map(item => ({
-      productId: item.productId,
-      quantity: item.quantity,
-      salePrice: item.salePrice,
-    }))
+    const payload: {
+      clientID: number;
+      status: string;
+      method: string;
+      dueDate: string;
+      items: Array<{ productId: number; quantity: number; salePrice: number }>;
+    } = {
+      clientID: selectedClientId,
+      status: form.status,
+      method: form.method,
+      dueDate: form.dueDate,
+      items: formItems.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        salePrice: item.salePrice,
+      })),
+    };
+
+    await SaleService.create(token, payload);
+    setForm(INITIAL_FORM);
+    close();
+    SaleService.getAll(token).then(setSales);
   }
-
-  await SaleService.create(token, payload)
-  setForm(INITAL_FORM)
-  close()
-  SaleService.getAll(token).then(setSales)
-}
 
   function updateFormItem(
     index: number,
@@ -104,127 +104,16 @@ async function handleCreate() {
     );
   }
 
-  // Achata sales + items para a visão por produto
-  const productRows = sales.flatMap((sale) =>
-    sale.items.map((item) => ({ ...item, sale })),
-  );
-
-  const toggleButton = (
-    <div className="toggleArea">
-      <button
-        onClick={() => setView("client")}
-        className="toggleBtn"
-        style={{
-          background: view === "client" ? "#f0f0f0" : "transparent",
-          fontWeight: view === "client" ? 500 : 400,
-        }}
-      >
-        Por cliente
-      </button>
-      <button
-        onClick={() => setView("product")}
-        className="toggleBtn"
-        style={{
-          background: view === "product" ? "#f0f0f0" : "transparent",
-          fontWeight: view === "product" ? 500 : 400,
-        }}
-      >
-        Por produto
-      </button>
-    </div>
-  );
-
-
-
   return (
     <PageLayout
       title="Análise de Vendas"
       actions={
-        <>
-          <button className="btn-primary" onClick={open}>
-            + Venda
-          </button>
-        </>
+        <button className="btn-primary" onClick={open}>
+          + Venda
+        </button>
       }
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginBottom: 16,
-        }}
-      >
-        {toggleButton}
-      </div>
-
-      {view === "client" && (
-        <TableLayout
-          title="Vendas"
-          headers={
-            <><th>#</th><th>Cliente</th><th>Dt venda</th><th>Status</th><th>Pagamento</th><th>Qtd</th><th>Total</th><th>Vencimento</th></>
-          }
-        >
-          {sales.map((sale) => {
-            const color = STATUS_COLOR[sale.saleStatus] || "#888";
-            const paymentColor = PAYMENT_COLOR[sale.paymentMethod] || "#888";
-
-            return (
-              <tr key={sale.id}>
-                <td>{sale.id}</td>
-                <td>{sale.client}</td>
-                <td>{fmtDate(sale.creatAt)}</td>
-                <td><span className="status-badge" style={{ background: color + "22", color }}>
-                    {statusLabel[sale.saleStatus]}
-                    </span>
-                </td>
-                <td><span className="status-badge" 
-                    style={{
-                      background: paymentColor + "22",
-                      color: paymentColor,
-                    }}
-                  >
-                    {PaymentStatus[sale.paymentMethod]}
-                  </span>
-                </td>
-                <td>{sale.totalQuantity}</td>
-                <td>{formatCurrency(sale.totalCash)}</td>
-                <td>{fmtDate(sale.dueDate)}</td>
-              </tr>
-            );
-          })}
-        </TableLayout>
-      )}
-      {view === "product" && (
-        <TableLayout
-          title="Produtos Vendidos"
-          headers={
-            <><th>#</th><th>Produto</th><th>Categoria</th><th>Dt Venda</th><th>Quantidade</th><th>R$ Unitário</th><th>R$ Total</th><th>Status</th></>}
-        >
-          {productRows.map((row, i) => {
-            const color = STATUS_COLOR[row.sale.saleStatus] || "#888";
-
-            return (
-              <tr key={i}>
-                <td>{i + 1}</td>
-                <td>{row.product}</td>
-                <td>{row.category}</td>
-                <td>{fmtDate(row.sale.creatAt)}</td>
-                <td>{row.quantity}</td>
-                <td>{formatCurrency(row.salePrice)}</td>
-                <td>{formatCurrency(row.quantity * row.salePrice)}</td>
-                <td>
-                  <span
-                    className="status-badge"
-                    style={{ background: color + "22", color }}
-                  >
-                    {statusLabel[row.sale.saleStatus]}
-                  </span>
-                </td>
-              </tr>
-            );
-          })}
-        </TableLayout>
-      )}
+      <SaleTable sales={sales} />
 
       {isOpen && (
         <Modal
@@ -235,10 +124,7 @@ async function handleCreate() {
               <button className="btn-secondary" onClick={close}>
                 Cancelar
               </button>
-              <button
-                className="btn-primary"
-                onClick={handleCreate}
-                >
+              <button className="btn-primary" onClick={handleCreate}>
                 Salvar
               </button>
             </>
@@ -265,38 +151,21 @@ async function handleCreate() {
             ))}
           </select>
 
+          {/* Produtos */}
           <div className="modal-now">
-            {/* Produtos */}
-            <label className="modal-label" style={{ marginTop: 12 }}>
-              Produtos
-            </label>
+            <label className="modal-label sale-items-label">Produtos</label>
 
             {/* Cabeçalho das colunas */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 72px 96px 28px",
-                gap: 6,
-                marginBottom: 4,
-              }}
-            >
-              <span style={{ fontSize: 11, color: "#6b7280" }}>Produto</span>
-              <span style={{ fontSize: 11, color: "#6b7280" }}>Qtd</span>
-              <span style={{ fontSize: 11, color: "#6b7280" }}>Vlr Unit.</span>
+            <div className="sale-items-header">
+              <span className="sale-items-header__col">Produto</span>
+              <span className="sale-items-header__col">Qtd</span>
+              <span className="sale-items-header__col">Vlr Unit.</span>
               <span />
             </div>
 
             {/* Linhas de item */}
             {formItems.map((item, i) => (
-              <div
-                key={i}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 72px 96px 28px",
-                  gap: 6,
-                  marginBottom: 6,
-                }}
-              >
+              <div key={i} className="sale-item-row">
                 <SearchSelect
                   options={products.map((p) => p.name)}
                   value={item.productName}
@@ -310,8 +179,7 @@ async function handleCreate() {
                   placeholder="Buscar produto..."
                 />
                 <input
-                  className="modal-input"
-                  style={{ margin: 0 }}
+                  className="modal-input sale-item-row__input"
                   type="number"
                   min={1}
                   value={item.quantity}
@@ -320,8 +188,7 @@ async function handleCreate() {
                   }
                 />
                 <input
-                  className="modal-input"
-                  style={{ margin: 0 }}
+                  className="modal-input sale-item-row__input"
                   type="number"
                   min={0}
                   step="0.01"
@@ -331,15 +198,7 @@ async function handleCreate() {
                   }
                 />
                 <button
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "#ef4444",
-                    cursor: "pointer",
-                    fontSize: 18,
-                    padding: 0,
-                    lineHeight: 1,
-                  }}
+                  className="sale-item-row__remove"
                   onClick={() => removeFormItem(i)}
                 >
                   ×
@@ -348,37 +207,28 @@ async function handleCreate() {
             ))}
 
             <button
-              className="btn-ghost"
+              className="btn-ghost sale-add-item-btn"
               onClick={addEmptyItem}
-              style={{ marginBottom: 12 }}
             >
               + Adicionar produto
             </button>
 
             {/* Total */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
-                gap: 8,
-                paddingTop: 8,
-                borderTop: "1px solid #e5e7eb",
-              }}
-            >
-              <span style={{ fontSize: 13, color: "#6b7280" }}>Total:</span>
-              <span style={{ fontSize: 16, fontWeight: 500 }}>
+            <div className="sale-total">
+              <span className="sale-total__label">Total:</span>
+              <span className="sale-total__value">
                 {formatCurrency(calcTotal())}
               </span>
             </div>
           </div>
 
+          {/* Status e Pagamento */}
           <div className="modal-row">
             <div>
               <label className="modal-label">Tipo</label>
               <select
                 className="modal-input"
-                value={form?.status}
+                value={form.status}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, status: e.target.value }))
                 }
@@ -392,23 +242,24 @@ async function handleCreate() {
               <label className="modal-label">Pagamento</label>
               <select
                 className="modal-input"
-                value={form?.method}
+                value={form.method}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, method: e.target.value }))
                 }
               >
-                <option value="PIX">pix</option>
+                <option value="PIX">Pix</option>
                 <option value="CASH">Dinheiro</option>
                 <option value="BANK_SLIP">Boleto</option>
               </select>
             </div>
           </div>
+
+          {/* Data de pagamento */}
           <div className="modal-now">
             <label className="modal-label">Data de Pagamento</label>
             <input
               className="modal-input"
               type="date"
-              placeholder="today"
               value={form.dueDate}
               onChange={(e) =>
                 setForm((f) => ({ ...f, dueDate: e.target.value }))
