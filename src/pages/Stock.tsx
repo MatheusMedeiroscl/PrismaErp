@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../shared/context/AuthContext";
 import { PageLayout } from "../shared/layout/PageLayout";
-import { StockService } from "../shared/services/StockServices";
 import { formatCurrency, statusLabel } from "../shared/utils/Format";
 import { Modal } from "../components/Modal";
 import { useModal } from "../shared/hooks/Modal";
@@ -14,6 +13,7 @@ import '../style/index.css'
 import { KpiCard } from "../components/Kpi";
 import { TableLayout } from "../components/Table";
 import type { IProduct, Istock } from "../shared/utils/Models";
+import { Services } from "../shared/services/Services";
 
 
 
@@ -35,13 +35,13 @@ export function StockPage(){
     const [dropdownPos, setDropdownPos] = useState<{top: number, left: number, stock: Istock} | null>(null);
 
     useEffect(() => {
-        StockService.getAll(token).then(r => setStocks(r))
+        Services.getAll(token, "stock").then(r => setStocks(r))
         ProductService.getAll(token).then(p => setProducts(p))
     }, [refresh])
 
     async function createStock(){
         console.log("FORM:", form);
-        await StockService.create(token, {
+        await Services.create(token, "movement", {
             productId: Number(form.productId),
             type: form.type,
             quantity: Number(form.quantity)
@@ -52,8 +52,7 @@ export function StockPage(){
     }
 
     async function updateStock(){
-
-        await StockService.updateStock(token, selectedStock.id, {
+        await Services.update(token, "stock", selectedStock.id, {
             quantity: Number(selectedStock.quantity),
             status: selectedStock?.status
         })
@@ -63,7 +62,7 @@ export function StockPage(){
     }
 
     async function receivedStock(id:number) {
-        await StockService.updateStock(token, id, {
+        await Services.update(token, "stock", id, {
             quantity: null,
             status: "AVAILABLE"
         });
@@ -71,7 +70,7 @@ export function StockPage(){
     }
 
     async function delelteStock(id:number) {
-        await StockService.delete(token, id)
+        await Services.delete(token,"stock", id)
         setRefresh(!refresh);    
 
     }

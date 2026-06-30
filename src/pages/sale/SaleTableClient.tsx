@@ -57,7 +57,6 @@ function SaleRow({ sale }: { sale: ISale }) {
               <table className="sale-row-detail__table">
                 <thead>
                   <tr>
-                    <th>Categoria</th>
                     <th>Produto</th>
                     <th>Qtd</th>
                     <th>R$ Unitário</th>
@@ -67,7 +66,6 @@ function SaleRow({ sale }: { sale: ISale }) {
                 <tbody>
                   {sale.items.map((item, i) => (
                     <tr key={i}>
-                        <td>{item.category}</td>
                       <td>{item.product}</td>
                       <td>{item.quantity}</td>
                         <td>{console.log(item) as undefined || formatCurrency(item.salePrice)}</td>

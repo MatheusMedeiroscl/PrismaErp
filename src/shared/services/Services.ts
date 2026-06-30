@@ -1,15 +1,9 @@
 const URL = "http://localhost:8080";
 
-interface IProduct {
-  name: string;
-  category: string;
-  costPrice: number;
-  salePrice: number;
-}
 
-export const ProductService = {
-  async getAll(token: string | null) {
-    const response = await fetch(`${URL}/products`, {
+export const Services = {
+  async getAll(token: string | null, path: string) {
+    const response = await fetch(`${URL}/${path}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -22,8 +16,8 @@ export const ProductService = {
 
     return response.json();
   },
-  async getById(id: number, token: string | null) {
-    const response = await fetch(`${URL}/products/${id}`, {
+  async getById(token: string | null, path: string, id: number) {
+    const response = await fetch(`${URL}/${path}/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -37,15 +31,14 @@ export const ProductService = {
 
     return response.json();
   },
-  async create(token: string | null, product: IProduct) {
-    console.log("Produto:", product);
-    const response = await fetch(`${URL}/products`, {
+  async create(token: string | null, path: string, obj: {} ) {
+    const response = await fetch(`${URL}/${path}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(product),
+      body: JSON.stringify(obj),
     });
 
     if (!response.ok) {
@@ -54,14 +47,14 @@ export const ProductService = {
 
     return response.json();
   },
-  async update(id: number, token: string | null, product: IProduct) {
-    const response = await fetch(`${URL}/products/${id}`, {
+  async update(token: string | null, path: string, id: number, obj: {} ) {
+    const response = await fetch(`${URL}/${path}/${id}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(product),
+      body: JSON.stringify(obj),
     });
 
     if (!response.ok) {
@@ -70,8 +63,8 @@ export const ProductService = {
 
     return response.json();
   },
-  async delete(id: number, token: string | null) {
-    await fetch(`${URL}/products/${id}`, {
+  async delete( token: string | null, path: string, id: number) {
+    await fetch(`${URL}/${path}/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

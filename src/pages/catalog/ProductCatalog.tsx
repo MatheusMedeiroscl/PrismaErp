@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
-import { useModal } from "../shared/hooks/Modal";
-import { ProductService } from "../shared/services/ProductService";
-import { useAuth } from "../shared/context/AuthContext";
-import { TableLayout } from "../components/Table";
-import { FilterPopover } from "../components/Filter";
-import { Modal } from "../components/Modal";
-
-import "../style/catalog.css";
+import { useAuth } from "../../shared/context/AuthContext";
+import type { IProduct } from "../../shared/utils/Models";
+import { useModal } from "../../shared/hooks/Modal";
+import { Services } from "../../shared/services/Services";
+import { TableLayout } from "../../components/Table";
+import { FilterPopover } from "../../components/Filter";
+import { Modal } from "../../components/Modal";
 import CurrencyInput from "react-currency-input-field";
-import type { IProduct } from "../shared/utils/Models";
+
 
 
 const INITIAL_FILTER = { name: "", category: "" };
@@ -34,11 +33,11 @@ export function ProductCatalog() {
   } | null>(null);
 
   useEffect(() => {
-    ProductService.getAll(token).then((p) => setProducts(p));
+    Services.getAll(token, "products").then((p) => setProducts(p));
   }, [refresh]);
 
   const handleUpdate = async () => {
-     await ProductService.update(selectedProduct.id, token, {
+     await Services.update(token, "product", selectedProduct.id, {
       name: selectedProduct.name.toUpperCase(),
       category: selectedProduct.category.toUpperCase(),
       costPrice: Number(selectedProduct.costPrice),
@@ -50,7 +49,7 @@ export function ProductCatalog() {
   }
 
   const handleDelete = async () => {
-    await ProductService.delete(selectedProduct.id, token);
+    await Services.delete(token, "product", selectedProduct.id);
 
     setSelectedProduct(INITIAL_PRODUCT);
     setRefresh(!refresh);

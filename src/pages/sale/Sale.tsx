@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../shared/context/AuthContext";
-import { SaleService } from "../../shared/services/SaleService";
 import { PageLayout } from "../../shared/layout/PageLayout";
 import { formatCurrency } from "../../shared/utils/Format";
 import { useModal } from "../../shared/hooks/Modal";
@@ -10,12 +9,12 @@ import {
   type IProduct,
   type ISale,
 } from "../../shared/utils/Models";
-import { ProductService } from "../../shared/services/ProductService";
-import { ClientService } from "../../shared/services/ClientService";
+
 import { SearchSelect } from "../../components/SearchSelect";
 
 import "../../style/Sale.css";
 import { SaleTable } from "./SaleTable";
+import { Services } from "../../shared/services/Services";
 
 const INITIAL_FORM = {
   clientID: 0,
@@ -43,9 +42,9 @@ export function SalePage() {
   const [formItems, setFormItems] = useState<IFormItem[]>([]);
 
   useEffect(() => {
-    SaleService.getAll(token).then((data) => setSales(data));
-    ProductService.getAll(token).then((p) => setProducts(p));
-    ClientService.getAll(token).then((c) => setClients(c));
+    Services.getAll(token, "sale").then((data) => setSales(data));
+    Services.getAll(token, "product").then((p) => setProducts(p));
+    Services.getAll(token, "client").then((c) => setClients(c));
   }, [token]);
 
   async function handleCreate() {
@@ -70,10 +69,10 @@ export function SalePage() {
       })),
     };
 
-    await SaleService.create(token, payload);
+    await Services.create(token,"sale" ,payload);
     setForm(INITIAL_FORM);
     close();
-    SaleService.getAll(token).then(setSales);
+    Services.getAll(token, "sale").then(setSales);
   }
 
   function updateFormItem(

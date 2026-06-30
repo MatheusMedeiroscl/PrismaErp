@@ -5,7 +5,7 @@ import { AppLayout } from './shared/layout/AppLayout'
 import { useAuth } from './shared/context/AuthContext'
 import { StockPage } from './pages/Stock'
 import { DashboardPage } from './pages/Dashboard'
-import { CatalogPage } from './pages/Catalog'
+import { CatalogPage } from './pages/catalog/Catalog'
 import { SalePage } from './pages/sale/Sale'
 
 export function Router() {

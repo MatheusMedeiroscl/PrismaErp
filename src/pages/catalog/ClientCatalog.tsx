@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { TableLayout } from "../components/Table";
-import "../style/catalog.css";
-import { ClientService } from "../shared/services/ClientService";
-import { useAuth } from "../shared/context/AuthContext";
-import { FilterPopover } from "./Filter";
-import { formatCnpj } from "../shared/utils/Format";
-import { useModal } from "../shared/hooks/Modal";
-import { Modal } from "./Modal";
-import type { IClient } from "../shared/utils/Models";
+import { TableLayout } from "../../components/Table";
+import { useAuth } from "../../shared/context/AuthContext";
+import { FilterPopover } from "../../components/Filter";
+import { formatCnpj } from "../../shared/utils/Format";
+import { useModal } from "../../shared/hooks/Modal";
+import { Modal } from "../../components/Modal";
+import type { IClient } from "../../shared/utils/Models";
+import { Services } from "../../shared/services/Services";
 
 
 
@@ -35,13 +34,13 @@ export function ClientCatalog() {
   } | null>(null);
 
   useEffect(() => {
-    ClientService.getAll(token).then((c) => setClients(c));
+    Services.getAll(token, "client").then((c) => setClients(c));
   }, [refresh]);
 
   const handleUpdate = async () => {
     console.log(selectedClient);
     
-    await ClientService.update(selectedClient.id, token, {
+    await Services.update(token, "client", selectedClient.id, {
       storeName: selectedClient.storeName,
       owner: selectedClient.owner,
       email: selectedClient.email,
@@ -55,7 +54,7 @@ export function ClientCatalog() {
   };
 
   const handleDelete = async () => {
-    await ClientService.delete(selectedClient.id, token);
+    await Services.delete(token, "client", selectedClient.id);
     setSelectedClient(INITIAL_CLIENT);
     setRefresh(!refresh);
     close();

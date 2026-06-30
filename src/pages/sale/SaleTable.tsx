@@ -40,3 +40,5 @@ export function SaleTable({ sales }: SaleTableProps) {
     </>
   );
 }
+
+

@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { PageLayout } from "../shared/layout/PageLayout";
-import { ProductCatalog } from "../components/ProductCatalog";
-import { ClientCatalog } from "../components/ClientCatalog";
-import { useModal } from "../shared/hooks/Modal";
-import { Modal } from "../components/Modal";
+import { PageLayout } from "../../shared/layout/PageLayout";
+import { ProductCatalog } from "./ProductCatalog";
+import { ClientCatalog } from "./ClientCatalog";
+import { useModal } from "../../shared/hooks/Modal";
+import { Modal } from "../../components/Modal";
 import CurrencyInput from "react-currency-input-field";
-import { ProductService } from "../shared/services/ProductService";
-import { useAuth } from "../shared/context/AuthContext";
-import { currencyToNumber } from "../shared/utils/Format";
-import { ClientService } from "../shared/services/ClientService";
+import { useAuth } from "../../shared/context/AuthContext";
+import { currencyToNumber } from "../../shared/utils/Format";
+import { Services } from "../../shared/services/Services";
 
 const Pages = [
     {
@@ -55,7 +54,7 @@ export function CatalogPage() {
 
     async function handleSave() {
         if(page.id === "Produto"){
-            await ProductService.create(token, {
+            await Services.create(token, "product" ,{
                 name: productForm.name.toUpperCase(),
                 category: productForm.category.toUpperCase(),
                 costPrice: currencyToNumber(productForm.costPrice),
@@ -67,7 +66,7 @@ export function CatalogPage() {
         }
 
         if(page.id === "Cliente"){
-            await ClientService.create(token, {
+            await Services.create(token, "client", {
                 storeName: clientForm.storeName.toUpperCase(),
                 owner: clientForm.owner.toUpperCase(), 
                 email: clientForm.email.toUpperCase(),
