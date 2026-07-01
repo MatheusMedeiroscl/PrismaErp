@@ -56,17 +56,17 @@ export function ProductCatalog() {
     close();
   }
 
-  const filterProducts = products.filter((p) => {
+  const filterProducts = (products ?? []).filter((p) => {
     const matchProdutoName =
       !filter.name || p.name.toLowerCase().includes(filter.name.toLowerCase());
     const matchProdutoCategory =
       !filter.category ||
       p.category.toLowerCase().includes(filter.category.toLowerCase());
 
-    return matchProdutoName || matchProdutoCategory;
+    return matchProdutoName && matchProdutoCategory;
   });
-  const hasFilter = !!filter.name;
 
+  const hasFilter = !!filter.name || !!filter.category;
   const handleDropdown = (
     e: React.MouseEvent<HTMLButtonElement>,
     product: IProduct,
@@ -88,13 +88,13 @@ export function ProductCatalog() {
                 label: "Produto",
                 placeholder: "Nome do produto",
                 value: filter.name,
-                onChange: (v) => setFilter((f) => ({ ...f, produto: v })),
+                onChange: (v) => setFilter((f) => ({ ...f, name: v })),
               },
               {
                 label: "Categoria",
                 placeholder: "Categoria do produto",
                 value: filter.category,
-                onChange: (v) => setFilter((f) => ({ ...f, produto: v })),
+                onChange: (v) => setFilter((f) => ({ ...f, category: v })),
               },
             ]}
           />

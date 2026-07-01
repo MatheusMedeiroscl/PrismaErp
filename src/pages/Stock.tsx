@@ -80,12 +80,10 @@ export function StockPage(){
 
     }
 
-
-
-    const filteredStocks = stocks.filter(s => {
+    const filteredStocks = (stocks ?? []).filter( s => {
         const matchProduct = !filter.product || s.product.toLowerCase().includes(filter.product.toLowerCase())
-        const matchCategory = !filter.category || s.product.toLowerCase().includes(filter.category.toLowerCase())
-        return matchProduct || matchCategory
+        const matchCategory = !filter.category || s.category.toLowerCase().includes(filter.category.toLowerCase())
+        return matchProduct && matchCategory
     })
   const hasFilter = !!(filter.product || filter.category)
 
@@ -118,7 +116,7 @@ export function StockPage(){
                     hasFilter={hasFilter}
                     onClear={() => setFilter(INITIAL_FILTER)}
                     fields={[
-                        { label: 'Produto', placeholder: 'Nome do produto', value: filter.product, onChange: v => setFilter(f => ({ ...f, produto: v })) },
+                        { label: 'Produto', placeholder: 'Nome do produto', value: filter.product, onChange: v => setFilter(f => ({ ...f, product: v })) },
                         { label: 'Categoria', placeholder: 'Categoria do produto', value: filter.category, onChange: v => setFilter(f => ({ ...f, category: v })) },
               ]} />
             }

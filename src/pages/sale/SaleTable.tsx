@@ -11,6 +11,7 @@ import { PAYMENT_COLOR, STATUS_COLOR } from "../../shared/utils/Colors";
 import { useModal } from "../../shared/hooks/Modal";
 import { Modal } from "../../components/Modal";
 import { EditSaleModal } from "./EditSaleModal";
+import { FilterPopover } from "../../components/Filter";
 
 interface SaleTableClientProps {
   sales: ISale[];
@@ -127,10 +128,32 @@ function SaleRow({ sale, onReload}: { sale: ISale; onReload: () => void }) {
     </>
   );
 }
+
+
+
+const INITIAL_FILTER = {client: '', status: ''}
+
 export function SaleTable({ sales, onReload }: SaleTableClientProps) {
+  const [filter, setFilter] = useState(INITIAL_FILTER)
+  const filteredSales = (sales ?? []).filter(s => {
+    const matchClient = !filter.client || s.client.toLowerCase().includes(filter.client.toLowerCase());
+      const matchStatus = !filter.status || (statusLabel[s.saleStatus] ?? s.saleStatus).toLowerCase().includes(filter.status.toLowerCase());
+    return matchClient && matchStatus
+  })
+
+  const hasFilter = !!(filter.client || filter.status)
   return (
     <TableLayout
       title="Vendas"
+      filter= {
+        <FilterPopover
+          hasFilter={hasFilter}
+          onClear={() => setFilter(INITIAL_FILTER)}
+          fields={[
+            {label: "Cliente", placeholder: "Nome do cliente", value: filter.client, onChange: v => setFilter(f => ({...f, client: v}))},
+            {label: "Status", placeholder: "Status da venda", value: filter.status, onChange: v => setFilter(f => ({...f, status: v}))},
+          ]}/>
+      }
       headers={
         <>
           <th>#</th> <th>Cliente</th> <th>Dt venda</th> <th>Status</th>
@@ -139,9 +162,18 @@ export function SaleTable({ sales, onReload }: SaleTableClientProps) {
         </>
       }
     >
-      {sales.map((sale) => (
-        <SaleRow key={sale.id} sale={sale} onReload = {onReload} />
-      ))}
+
+      {filteredSales.length === 0
+        ? <tr><td colSpan={6} className="empty-row">Nenhum resultado encontrado</td></tr>
+        : filteredSales.map((sale, i)=> {
+          return (
+            <SaleRow key={sale.id} sale={sale} onReload = {onReload} />
+          )
+        }
+            
+        )
+      }
+  
     </TableLayout>
   );
 }

@@ -33,7 +33,8 @@ export function FilterPopover({fields, hasFilter, onClear}: FilterPopoverProps )
       ≡ Filtros {hasFilter && <span className="filter-dot" />}
     </button>
     {open && (
-      <div className="filter-popover">
+      <div className="filter-popover"
+      onMouseDown={(e) => e.stopPropagation()}>
         <p className="filter-title">Filtrar por</p>
 
         {fields.map((field, i) => (

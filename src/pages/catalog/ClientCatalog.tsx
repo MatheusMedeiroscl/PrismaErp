@@ -60,7 +60,7 @@ export function ClientCatalog() {
     close();
   };
 
-  const filterClient = clients.filter((c) => {
+  const filterClient = (clients ?? []).filter((c) => {
     const matchStoreName =
       !filter.storeName ||
       c.storeName.toLowerCase().includes(filter.storeName.toLocaleLowerCase());
@@ -71,7 +71,7 @@ export function ClientCatalog() {
       !filter.cnpj ||
       c.cnpj.toLowerCase().includes(filter.cnpj.toLocaleLowerCase());
 
-    return matchStoreName || matchOwner || matchCnpj;
+    return matchStoreName &&  matchOwner && matchCnpj;
   });
 
   const hasFilter = !!(filter.cnpj || filter.owner || filter.storeName);
