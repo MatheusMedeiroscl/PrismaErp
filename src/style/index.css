@@ -95,6 +95,18 @@
   font-weight: 500;
 }
 
+.btn-delete {
+  background: #ef4040;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  margin: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
 .btn-primary:hover {
   background: #4f46e5;
 }
@@ -105,8 +117,11 @@
   border: 1px solid #d1d5db;
   border-radius: 6px;
   padding: 8px 14px;
+padding: 8px 14px;
+  margin: 4px;
   font-size: 12px;
   cursor: pointer;
+  font-weight: 500;
 }
 
 .btn-secondary:hover {

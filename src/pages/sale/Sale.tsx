@@ -41,11 +41,15 @@ export function SalePage() {
   const { open, close, isOpen } = useModal();
   const [formItems, setFormItems] = useState<IFormItem[]>([]);
 
-  useEffect(() => {
-    Services.getAll(token, "sale").then((data) => setSales(data));
-    Services.getAll(token, "product").then((p) => setProducts(p));
-    Services.getAll(token, "client").then((c) => setClients(c));
-  }, [token]);
+    function fetchSales() {
+      Services.getAll(token, "sale").then(setSales);
+    }
+
+    useEffect(() => {
+      fetchSales();
+      Services.getAll(token, "product").then(setProducts);
+      Services.getAll(token, "client").then(setClients);
+    }, [token]);
 
   async function handleCreate() {
     if (!selectedClientId) return;
@@ -71,6 +75,8 @@ export function SalePage() {
 
     await Services.create(token,"sale" ,payload);
     setForm(INITIAL_FORM);
+    setFormItems([]);
+    setSelectedClientId(null);
     close();
     Services.getAll(token, "sale").then(setSales);
   }
@@ -112,7 +118,7 @@ export function SalePage() {
         </button>
       }
     >
-      <SaleTable sales={sales} />
+      <SaleTable sales={sales} onReload={fetchSales} />
 
       {isOpen && (
         <Modal

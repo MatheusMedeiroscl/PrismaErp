@@ -4,7 +4,6 @@ import { PageLayout } from "../shared/layout/PageLayout";
 import { formatCurrency, statusLabel } from "../shared/utils/Format";
 import { Modal } from "../components/Modal";
 import { useModal } from "../shared/hooks/Modal";
-import { ProductService } from "../shared/services/ProductService";
 import { FilterPopover } from "../components/Filter";
 import { STATUS_STORAGE_COLOR } from "../shared/utils/Colors";
 
@@ -36,7 +35,7 @@ export function StockPage(){
 
     useEffect(() => {
         Services.getAll(token, "stock").then(r => setStocks(r))
-        ProductService.getAll(token).then(p => setProducts(p))
+        Services.getAll(token, "product").then(p => setProducts(p))
     }, [refresh])
 
     async function createStock(){

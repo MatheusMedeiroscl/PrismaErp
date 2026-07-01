@@ -19,6 +19,7 @@ export interface IProduct {
 export interface ISaleItem {
   id: number;
   product: string;
+  productId: number;
   category: string;
   quantity: number;
   salePrice: number;
@@ -28,6 +29,7 @@ export interface ISaleItem {
 export interface ISale {
   id: number;
   client: string;
+  clientId: number;
   creatAt: string;
   paymentMethod: string;
   saleStatus: string;

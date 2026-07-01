@@ -33,7 +33,7 @@ export function ProductCatalog() {
   } | null>(null);
 
   useEffect(() => {
-    Services.getAll(token, "products").then((p) => setProducts(p));
+    Services.getAll(token, "product").then((p) => setProducts(p));
   }, [refresh]);
 
   const handleUpdate = async () => {
