@@ -7,6 +7,7 @@ import { StockPage } from './pages/Stock'
 import { DashboardPage } from './pages/Dashboard'
 import { CatalogPage } from './pages/catalog/Catalog'
 import { SalePage } from './pages/sale/Sale'
+import { ExportsPage } from './pages/Exports'
 
 export function Router() {
   const { isAuthenticated, isLoading } = useAuth()
@@ -31,6 +32,7 @@ export function Router() {
         <Route path='/dashboard' element={<DashboardPage />} />
         <Route path='/catalogo' element={<CatalogPage />} />
         <Route path='/vendas' element={<SalePage />} />
+        <Route path='/exports' element={<ExportsPage />} />
         <Route path='*' element={<Navigate to='/dashboard' />} />
       </Routes>
     </AppLayout>

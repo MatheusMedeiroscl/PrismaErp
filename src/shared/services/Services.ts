@@ -72,4 +72,25 @@ export const Services = {
       },
     });
   },
+  async export(token: string | null, path: string, filename: string){
+    const response = await fetch(`${URL}/${path}/export`,{
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${filename}.xlsx`
+    a.click()
+    window.URL.revokeObjectURL(url)
+  }
 };

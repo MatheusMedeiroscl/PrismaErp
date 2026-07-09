@@ -9,9 +9,10 @@ import {
 } from "../../shared/utils/Format";
 import { PAYMENT_COLOR, STATUS_COLOR } from "../../shared/utils/Colors";
 import { useModal } from "../../shared/hooks/Modal";
-import { Modal } from "../../components/Modal";
 import { EditSaleModal } from "./EditSaleModal";
 import { FilterPopover } from "../../components/Filter";
+import { useAuth } from "../../shared/context/AuthContext";
+import { Services } from "../../shared/services/Services";
 
 interface SaleTableClientProps {
   sales: ISale[];
@@ -21,22 +22,6 @@ interface SaleTableClientProps {
 
 
 
-function editModal(){
- const {open, close, isOpen} = useModal();
-return (<>
-  <Modal
-   title="Editar Venda"
-   onClose={close}>
-
-    <p>test</p>
-  </Modal>
-
-
-</>
-
-)
-
-}
 
 function SaleRow({ sale, onReload}: { sale: ISale; onReload: () => void }) {
   const [expanded, setExpanded] = useState(false);
@@ -134,6 +119,7 @@ function SaleRow({ sale, onReload}: { sale: ISale; onReload: () => void }) {
 const INITIAL_FILTER = {client: '', status: ''}
 
 export function SaleTable({ sales, onReload }: SaleTableClientProps) {
+  const {token}= useAuth();
   const [filter, setFilter] = useState(INITIAL_FILTER)
   const filteredSales = (sales ?? []).filter(s => {
     const matchClient = !filter.client || s.client.toLowerCase().includes(filter.client.toLowerCase());
@@ -141,11 +127,13 @@ export function SaleTable({ sales, onReload }: SaleTableClientProps) {
     return matchClient && matchStatus
   })
 
+
+
   const hasFilter = !!(filter.client || filter.status)
   return (
     <TableLayout
       title="Vendas"
-      filter= {
+      filter= {<>
         <FilterPopover
           hasFilter={hasFilter}
           onClear={() => setFilter(INITIAL_FILTER)}
@@ -153,7 +141,9 @@ export function SaleTable({ sales, onReload }: SaleTableClientProps) {
             {label: "Cliente", placeholder: "Nome do cliente", value: filter.client, onChange: v => setFilter(f => ({...f, client: v}))},
             {label: "Status", placeholder: "Status da venda", value: filter.status, onChange: v => setFilter(f => ({...f, status: v}))},
           ]}/>
-      }
+
+
+      </>}
       headers={
         <>
           <th>#</th> <th>Cliente</th> <th>Dt venda</th> <th>Status</th>
@@ -165,7 +155,7 @@ export function SaleTable({ sales, onReload }: SaleTableClientProps) {
 
       {filteredSales.length === 0
         ? <tr><td colSpan={6} className="empty-row">Nenhum resultado encontrado</td></tr>
-        : filteredSales.map((sale, i)=> {
+        : filteredSales.map((sale)=> {
           return (
             <SaleRow key={sale.id} sale={sale} onReload = {onReload} />
           )
