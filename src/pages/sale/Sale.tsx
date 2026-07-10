@@ -15,6 +15,7 @@ import { SearchSelect } from "../../components/SearchSelect";
 import "../../style/Sale.css";
 import { SaleTable } from "./SaleTable";
 import { Services } from "../../shared/services/Services";
+import { KpiCard } from "../../components/Kpi";
 
 const INITIAL_FORM = {
   clientID: 0,
@@ -31,6 +32,15 @@ interface IFormItem {
   quantity: number;
 }
 
+    function getCurrentMonthSales(sales: ISale[]) {
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0') // "07"
+      const prefix = `${year}-${month}` // "2026-07"
+
+      return sales.filter(sale => sale.creatAt?.startsWith(prefix))
+    }
+
 export function SalePage() {
   const { token } = useAuth();
   const [sales, setSales] = useState<ISale[]>([]);
@@ -40,7 +50,7 @@ export function SalePage() {
   const [form, setForm] = useState(INITIAL_FORM);
   const { open, close, isOpen } = useModal();
   const [formItems, setFormItems] = useState<IFormItem[]>([]);
-
+  const currentMonthSales = getCurrentMonthSales(sales)
     function fetchSales() {
       Services.getAll(token, "sale").then(setSales);
     }
@@ -72,6 +82,8 @@ export function SalePage() {
         salePrice: item.salePrice,
       })),
     };
+
+
 
     await Services.create(token,"sale" ,payload);
     setForm(INITIAL_FORM);
@@ -109,6 +121,16 @@ export function SalePage() {
     );
   }
 
+   const kpis = [
+    {label: 'Total de Produtos', value: currentMonthSales.reduce((acc, s) => acc + s.totalQuantity, 0)},
+    {label: 'Valor Total em Estoque', value: formatCurrency(currentMonthSales.reduce((acc, s) => acc + s.totalCash, 0))},
+    {label: 'Pedidos', value: formatCurrency(currentMonthSales.filter(s => s.saleStatus === 'RESERVED').reduce((acc, s) => acc + s.totalCash, 0))},
+    {label: 'A Receber', value: formatCurrency(currentMonthSales.filter(s => s.saleStatus === 'PENDING').reduce((acc, s) => acc + s.totalCash, 0))},
+
+
+  ]
+
+
   return (
     <PageLayout
       title="Análise de Vendas"
@@ -118,7 +140,12 @@ export function SalePage() {
         </button>
       }
     >
-      <SaleTable sales={sales} onReload={fetchSales} />
+        <div className="kpi-cards-row">
+                {kpis.map(kpi => (
+                  <KpiCard className="kpi-card" key={kpi.label} label={kpi.label} value={kpi.value} />
+                ))}
+              </div>
+      <SaleTable sales={currentMonthSales} onReload={fetchSales} />
 
       {isOpen && (
         <Modal

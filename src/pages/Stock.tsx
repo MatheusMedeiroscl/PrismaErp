@@ -101,14 +101,12 @@ export function StockPage(){
         title= "Análise de Estoque"
         actions = {<button onClick={open} className="btn-primary"> + Novo Registro </button>}
     >
-
-      <div className="dashboard-inner">
-        <div className="kpi-cards-row">
+    <div className="kpi-cards-row">
           {kpis.map(kpi => (
             <KpiCard className="kpi-card" key={kpi.label} label={kpi.label} value={kpi.value} />
           ))}
-        </div>
     </div>
+
         <TableLayout
             title="Estoque"
             filter = {

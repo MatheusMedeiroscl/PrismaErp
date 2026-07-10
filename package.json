@@ -20,7 +20,7 @@
     "react-currency-input-field": "^4.0.5",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.14.0",
-    "recharts": "^2.0.0",
+    "recharts": "^2.15.4",
     "tsx": "^4.0.0"
   },
   "devDependencies": {
