@@ -120,12 +120,12 @@ export function SalePage() {
       0,
     );
   }
-
+  const today = new Date();
    const kpis = [
     {label: 'Total de Produtos', value: currentMonthSales.reduce((acc, s) => acc + s.totalQuantity, 0)},
     {label: 'Valor Total em Estoque', value: formatCurrency(currentMonthSales.reduce((acc, s) => acc + s.totalCash, 0))},
-    {label: 'Pedidos', value: formatCurrency(currentMonthSales.filter(s => s.saleStatus === 'RESERVED').reduce((acc, s) => acc + s.totalCash, 0))},
     {label: 'A Receber', value: formatCurrency(currentMonthSales.filter(s => s.saleStatus === 'PENDING').reduce((acc, s) => acc + s.totalCash, 0))},
+    {label: 'Atrasado', value: formatCurrency(currentMonthSales.filter(s => s.saleStatus === 'PENDING' && new Date(s.dueDate) < today).reduce((acc, s) => acc + s.totalCash, 0))}
 
 
   ]

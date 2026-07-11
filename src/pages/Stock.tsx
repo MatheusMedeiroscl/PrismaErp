@@ -11,7 +11,7 @@ import '../style/Stock.css'
 import '../style/index.css'
 import { KpiCard } from "../components/Kpi";
 import { TableLayout } from "../components/Table";
-import type { IProduct, Istock } from "../shared/utils/Models";
+import type { Imovements, IProduct, Istock } from "../shared/utils/Models";
 import { Services } from "../shared/services/Services";
 
 
@@ -21,10 +21,17 @@ const INITIAL_FORM = { productId: 0, quantity: '', type: 'IN' }
 const INITIAL_STOCK = {product: '', id: 0, quantity: 0, status: ''}
 const INITIAL_FILTER = {product: '', category: ''}
 
+
+function getLowStock(stocks: Istock[]) {
+  return stocks.filter((s) => s.quantity < 50 && s.status === "AVAILABLE");
+}
+
+
 export function StockPage(){
     const {token} = useAuth();
     const [refresh, setRefresh] = useState(false);
     const [stocks, setStocks] = useState<Istock[]>([]);
+    const lowerStock = getLowStock(stocks);
     const { isOpen, open, close } = useModal();
     const { isOpen: isEditOpen, open: openEdit, close: closeEdit } = useModal(); 
     const [selectedStock, setSelectedStock] = useState(INITIAL_STOCK);
@@ -91,6 +98,8 @@ export function StockPage(){
     {label: 'Total de Produtos', value: stocks.reduce((acc, s) => acc + s.quantity, 0)},
     {label: 'Valor Total em Estoque', value: formatCurrency(stocks.reduce((acc, s) => acc + (s.costPrice * s.quantity), 0))},
     {label: 'Produtos em Pedido', value: stocks.filter(s => s.status === 'ORDER').reduce((acc, s) => acc + s.quantity, 0)},
+    {label: 'Produtos em Estoque', value: stocks.filter(s => s.status === 'AVAILABLE' && s.quantity > 0).length}
+    
 
   ]
 

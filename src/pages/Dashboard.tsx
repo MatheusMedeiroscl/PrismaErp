@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../shared/context/AuthContext";
 import { PageLayout } from "../shared/layout/PageLayout";
-import { formatCurrency } from "../shared/utils/Format";
+import { fmtDate, formatCurrency } from "../shared/utils/Format";
 import { Services } from "../shared/services/Services";
 import { KpiCard } from "../components/Kpi";
-import { BarChartCard } from "../components/BarChart.tsx";
+import { BarChartCard } from "../components/BarChart";
 import type { ISale, Istock } from "../shared/utils/Models";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -23,14 +23,40 @@ function getWeekLabel(dateStr: string) {
   return "Semana 4";
 }
 
-function getSalesByWeek(sales: ISale[], status: string[]) {
-  const weeks: Record<string, number> = {
-    "Semana 1": 0, "Semana 2": 0, "Semana 3": 0, "Semana 4": 0,
+function getSalesByWeekGrouped(sales: ISale[]) {
+  const weeks: Record<string, { label: string; pagas: number; pagasValor: number; aReceber: number; aReceberValor: number }> = {
+    "Semana 1": { label: "Semana 1", pagas: 0, pagasValor: 0, aReceber: 0, aReceberValor: 0 },
+    "Semana 2": { label: "Semana 2", pagas: 0, pagasValor: 0, aReceber: 0, aReceberValor: 0 },
+    "Semana 3": { label: "Semana 3", pagas: 0, pagasValor: 0, aReceber: 0, aReceberValor: 0 },
+    "Semana 4": { label: "Semana 4", pagas: 0, pagasValor: 0, aReceber: 0, aReceberValor: 0 },
   };
-  sales
-    .filter((s) => status.includes(s.saleStatus))
-    .forEach((s) => { weeks[getWeekLabel(s.creatAt)]++ });
-  return Object.entries(weeks).map(([label, value]) => ({ label, value }));
+  sales.forEach((s) => {
+    const week = getWeekLabel(s.creatAt);
+    if (s.saleStatus === "PAID") {
+      weeks[week].pagas++;
+      weeks[week].pagasValor += s.totalCash;
+    }
+    if (s.saleStatus === "PENDING" || s.saleStatus === "RESERVED") {
+      weeks[week].aReceber++;
+      weeks[week].aReceberValor += s.totalCash;
+    }
+  });
+  return Object.values(weeks);
+}
+
+function getStockByWeek(stocks: Istock[]) {
+  const weeks: Record<string, { label: string; disponiveis: number; pedidos: number }> = {
+    "Semana 1": { label: "Semana 1", disponiveis: 0, pedidos: 0 },
+    "Semana 2": { label: "Semana 2", disponiveis: 0, pedidos: 0 },
+    "Semana 3": { label: "Semana 3", disponiveis: 0, pedidos: 0 },
+    "Semana 4": { label: "Semana 4", disponiveis: 0, pedidos: 0 },
+  };
+  stocks.forEach((s) => {
+    const week = getWeekLabel(s.createAt);
+    if (s.status === "AVAILABLE") weeks[week].disponiveis += s.quantity;
+    if (s.status === "ORDER")     weeks[week].pedidos += s.quantity;
+  });
+  return Object.values(weeks);
 }
 
 function getInactiveClients(sales: ISale[]) {
@@ -47,8 +73,13 @@ function getInactiveClients(sales: ISale[]) {
     .slice(0, 5);
 }
 
+function getPendingClients(sales: ISale[]) {
+  const today = new Date();
+  return sales.filter((s) => s.saleStatus === "PENDING" && new Date(s.dueDate) < today);
+}
+
 function getLowStock(stocks: Istock[]) {
-  return stocks.filter((s) => s.quantity < 50 && s.status === "AVAILABLE");
+  return stocks.filter((s) => s.quantity < 100 && s.status === "AVAILABLE");
 }
 
 function getTopProducts(sales: ISale[]) {
@@ -76,20 +107,18 @@ export function DashboardPage() {
     Services.getAll(token, "stock").then(setStocks);
   }, [token]);
 
-  const monthSales = getCurrentMonthSales(sales);
-
-  const kpis = [
-    { label: "Vendas no Mês",     value: monthSales.length },
-    { label: "Faturado",          value: formatCurrency(monthSales.filter(s => s.saleStatus === "PAID").reduce((acc, s) => acc + s.totalCash, 0)) },
-    { label: "A Receber",         value: formatCurrency(monthSales.filter(s => s.saleStatus === "PENDING").reduce((acc, s) => acc + s.totalCash, 0)) },
-    { label: "Itens Baixo Estoque", value: getLowStock(stocks).length },
-  ];
-
-  const paidByWeek    = getSalesByWeek(monthSales, ["PAID"]);
-  const pendingByWeek = getSalesByWeek(monthSales, ["PENDING", "RESERVED"]);
+  const monthSales      = getCurrentMonthSales(sales);
   const inactiveClients = getInactiveClients(sales);
+  const pendingClients  = getPendingClients(sales);
   const lowStock        = getLowStock(stocks);
   const topProducts     = getTopProducts(sales);
+
+  const kpis = [
+    { label: "Vendas no Mês",       value: monthSales.length },
+    { label: "Faturado",            value: formatCurrency(monthSales.filter(s => s.saleStatus === "PAID").reduce((acc, s) => acc + s.totalCash, 0)) },
+    { label: "A Receber",           value: formatCurrency(monthSales.filter(s => s.saleStatus === "PENDING").reduce((acc, s) => acc + s.totalCash, 0)) },
+    { label: "Estoque Baixo",       value: lowStock.length },
+  ];
 
   return (
     <PageLayout title="Dashboard">
@@ -102,25 +131,31 @@ export function DashboardPage() {
       </div>
 
       {/* Gráficos */}
-      <div className="dashboard-charts-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, margin: "16px 0" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, margin: "16px 0" }}>
         <BarChartCard
-          title="Vendas Pagas por Semana"
-          data={paidByWeek}
-          color="#22c55e"
+          title="Vendas por Semana"
+          data={getSalesByWeekGrouped(monthSales)}
+          series={[
+            { dataKey: "pagasValor",    label: "Recebido",     color: "#22c55e", format: "currency" },
+            { dataKey: "aReceberValor", label: "A Receber", color: "#f59e0b", format: "currency" },
+          ]}
         />
         <BarChartCard
-          title="A Receber / Pedidos por Semana"
-          data={pendingByWeek}
-          color="#f59e0b"
+          title="Movimentação de Estoque por Semana"
+          data={getStockByWeek(stocks)}
+          series={[
+            { dataKey: "disponiveis", label: "Disponível", color: "#3b82f6", format: "number" },
+            { dataKey: "pedidos",     label: "Pedidos",    color: "#a855f7", format: "number" },
+          ]}
         />
       </div>
 
       {/* Tabelas */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16 }}>
 
         {/* Clientes inativos */}
         <div className="table-card">
-          <h3 className="chart-title">Perído de compra - por cliente</h3>
+          <h3 className="chart-title">Período de Compra</h3>
           <table className="data-table">
             <thead><tr><th>Cliente</th><th>Dias</th></tr></thead>
             <tbody>
@@ -136,9 +171,28 @@ export function DashboardPage() {
           </table>
         </div>
 
+        {/* Pagamentos atrasados */}
+        <div className="table-card">
+          <h3 className="chart-title">Pagamentos Atrasados</h3>
+          <table className="data-table">
+            <thead><tr><th>Cliente</th><th>Vencimento</th><th>Total</th></tr></thead>
+            <tbody>
+              {pendingClients.length === 0
+                ? <tr><td colSpan={3} className="empty-row">Sem dados</td></tr>
+                : pendingClients.map((c, i) => (
+                  <tr key={i}>
+                    <td>{c.client}</td>
+                    <td style={{ color: "#ef4444" }}>{fmtDate(c.dueDate)}</td>
+                    <td>{formatCurrency(c.totalCash)}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+
         {/* Estoque baixo */}
         <div className="table-card">
-          <h3 className="chart-title">Estoque Abaixo de 50</h3>
+          <h3 className="chart-title">Estoque Abaixo dos 100</h3>
           <table className="data-table">
             <thead><tr><th>Produto</th><th>Qtd</th></tr></thead>
             <tbody>

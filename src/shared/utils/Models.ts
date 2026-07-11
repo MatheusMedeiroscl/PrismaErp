@@ -47,3 +47,10 @@ export interface IClient {
   cnpj: string;
   address: string;
 }
+
+
+export interface Imovements {
+  product: string;
+  quantity: number;
+  type: string;
+}
