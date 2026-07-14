@@ -1,5 +1,4 @@
-const URL = import.meta.env.API_URL
-
+const URL = import.meta.env.VITE_API_URL
 
 export const Services = {
   async getAll(token: string | null, path: string) {
