@@ -17,7 +17,6 @@ export const UserServices = {
   const { token } = await response.json()   
   return token;
   },
-
   async getWithAuth(endpoint: string, token: string) {
     const response = await fetch(`${URL}/${endpoint}`, {
       method: "GET",
@@ -34,9 +33,10 @@ export const UserServices = {
     return response.json();
   },
 
+
   async getme(token: string){
 
-    const response = await fetch(`${URL}/me`,{
+    const response = await fetch(`${URL}/auth/me`,{
         method: "GET",
         headers: {
             "Content-Type": "application/json",
