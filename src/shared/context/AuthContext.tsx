@@ -5,7 +5,7 @@ import { UserServices } from '../services/UserServices'
 interface AuthContextData {
   token: string | null
   isAuthenticated: boolean
-  isLoading: boolean // 👈 novo: evita flash de tela errada
+  isLoading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => void
 }
@@ -24,10 +24,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
 
-  // Valida o token assim que o app abre
   useEffect(() => {
     async function validateToken() {
-      const storedToken = localStorage.getItem('token')
+      const storedToken = sessionStorage.getItem('token')
 
       if (!storedToken) {
         setIsLoading(false)
@@ -39,8 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(storedToken)
         setUser(userData)
       } catch {
-        // Token inválido ou expirado
-        localStorage.removeItem('token')
+        sessionStorage.removeItem('token')
         setToken(null)
       } finally {
         setIsLoading(false)
@@ -54,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(email: string, password: string) {
     const receivedToken = await UserServices.login(email, password)
-    localStorage.setItem('token', receivedToken)
+    sessionStorage.setItem('token', receivedToken)
     setToken(receivedToken)
 
     const userData = await UserServices.getme(receivedToken)
@@ -64,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function signOut() {
-    localStorage.removeItem('token')
+    sessionStorage.removeItem('token')
     setToken(null)
     navigate('/registro')
   }

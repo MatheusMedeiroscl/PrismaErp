@@ -1,4 +1,4 @@
-const URL = 'http://localhost:8080/auth'
+const URL = import.meta.env.API_URL
 
 export const UserServices = {
   async login(email: string, password: string): Promise<string> {

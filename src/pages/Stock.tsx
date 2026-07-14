@@ -11,7 +11,7 @@ import '../style/Stock.css'
 import '../style/index.css'
 import { KpiCard } from "../components/Kpi";
 import { TableLayout } from "../components/Table";
-import type { Imovements, IProduct, Istock } from "../shared/utils/Models";
+import type { IProduct, Istock } from "../shared/utils/Models";
 import { Services } from "../shared/services/Services";
 
 
